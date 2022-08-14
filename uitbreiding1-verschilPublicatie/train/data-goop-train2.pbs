@@ -1,0 +1,14 @@
+#!/bin/bash
+#PBS -l walltime=24:00:00
+#PBS -l partition=gpu
+#PBS -l nodes=1:ppn=9:gpus=1:skylake
+#PBS -l pmem=5gb
+#PBS -A lp_DEEPTEMPL
+#PBS -m abe
+#PBS -M marlon.saelens@student.kuleuven.be
+
+source activate thesis
+cd $VSC_DATA/thesis/time
+python datasetIteratie2.py Train train/train-goop-1000.tsv train/time/dataset2/ goop train/time/trainDatasetIteratie2-goop 2
+
+

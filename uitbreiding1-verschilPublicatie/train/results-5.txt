@@ -1,0 +1,386 @@
+C:\Users\Marlon\anaconda3\envs\allennlp_env\python.exe C:/Users/Marlon/PycharmProjects/thesis/base/verificationModel.py Train train/nog.tsv
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+Loading Train set...
+Reading the claims
+snippets//obry-00045 not exist
+45
+Done
+Loading Dev set...
+Reading the claims
+7
+Done
+Loading Test set...
+Reading the claims
+file base/bert-it\config.json not found
+7
+Done
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+file base/bert-it\config.json not found
+Results model thal
+Macro F1-score
+0.02777777777777778
+Micro F1 - score
+0.09090909090909091
+Results model peck
+Macro F1-score
+0.09523809523809523
+Micro F1 - score
+0.16666666666666666
+Results model obry
+Macro F1-score
+0.0625
+Micro F1 - score
+0.14285714285714285
+Results model huca
+Macro F1-score
+0.16666666666666666
+Micro F1 - score
+0.3333333333333333
+Results model mpws
+Macro F1-score
+0.11111111111111112
+Micro F1 - score
+0.20000000000000004
+Results model faan
+Macro F1-score
+0.14285714285714285
+Micro F1 - score
+0.2727272727272727
+Results model abbc
+Macro F1-score
+0.22564102564102564
+Micro F1 - score
+0.5116279069767442
+Results model clck
+Macro F1-score
+0.16666666666666666
+Micro F1 - score
+0.3333333333333333
+Results model vogo
+Macro F1-score
+0.03289473684210526
+Micro F1 - score
+0.15151515151515152
+Results model farg
+Macro F1-score
+0.0
+Micro F1 - score
+0.0
+Results model faly
+Macro F1-score
+0.25
+Micro F1 - score
+0.2857142857142857
+Results model afck
+Macro F1-score
+0.05574912891986063
+Micro F1 - score
+0.18604651162790695
+Results model vees
+Macro F1-score
+0.05357142857142856
+Micro F1 - score
+0.12
+Results model fani
+Macro F1-score
+0.0
+Micro F1 - score
+0.0
+Results model chct
+Macro F1-score
+0.15
+Micro F1 - score
+0.42857142857142855
+Results model ranz
+Macro F1-score
+0.0
+Micro F1 - score
+0.0
+Results model bove
+Macro F1-score
+0.4915254237288135
+Micro F1 - score
+0.9666666666666667
+Results model wast
+Macro F1-score
+0.03174603174603175
+Micro F1 - score
+0.10526315789473684
+Results model thet
+Macro F1-score
+0.03333333333333333
+Micro F1 - score
+0.1111111111111111
+Results model para
+Macro F1-score
+0.04081632653061224
+Micro F1 - score
+0.16666666666666666
+Epoch 1
+-------------------------------
+Average loss epoch model fani1.1108241081237793
+Average loss epoch model clck1.0936329364776611
+Average loss epoch model huca1.098616600036621
+Average loss epoch model ranz0.6935057044029236
+Average loss epoch model obry2.7627310752868652
+Average loss epoch model mpws2.1958693265914917
+Average loss epoch model peck2.209494471549988
+Average loss epoch model thet3.5781726837158203
+Average loss epoch model faly2.9755412340164185
+Average loss epoch model faan3.29748272895813
+Average loss epoch model thal5.457887411117554
+Average loss epoch model para12.422294735908508
+Average loss epoch model wast11.675631165504456
+Average loss epoch model bove3.2670812979340553
+Average loss epoch model chct12.572925329208374
+Average loss epoch model farg26.398292779922485
+Average loss epoch model abbc11.821336925029755
+Average loss epoch model afck20.82835054397583
+Average loss epoch model vees18.076370000839233
+Average loss epoch model vogo31.5444073677063
+Epoch 2
+-------------------------------
+Average loss epoch model clck2.8846698999404907
+Average loss epoch model huca2.191243529319763
+Average loss epoch model ranz1.36395925283432
+Average loss epoch model fani2.211653709411621
+Average loss epoch model faly7.631255626678467
+Average loss epoch model mpws4.363673567771912
+Average loss epoch model thet7.163861632347107
+Average loss epoch model obry5.536452651023865
+Average loss epoch model peck4.401870608329773
+Average loss epoch model thal10.834691405296326
+Average loss epoch model faan6.590188264846802
+Average loss epoch model wast23.218072533607483
+Average loss epoch model para23.28850495815277
+Average loss epoch model bove4.213977232575417
+Average loss epoch model chct25.044347643852234
+Average loss epoch model farg52.56959104537964
+Average loss epoch model abbc23.33891624212265
+Average loss epoch model afck40.953444957733154
+Average loss epoch model vees35.99767601490021
+Average loss epoch model vogo60.62459635734558
+Epoch 3
+-------------------------------
+Average loss epoch model huca3.2903733253479004
+Average loss epoch model fani3.3117979764938354
+Average loss epoch model clck3.9793825149536133
+Average loss epoch model ranz3.2107433676719666
+Average loss epoch model thet10.748136639595032
+Average loss epoch model mpws6.4493407011032104
+Average loss epoch model obry8.192626953125
+Average loss epoch model peck6.585821509361267
+Average loss epoch model faly10.558344841003418
+Average loss epoch model thal16.20945966243744
+Average loss epoch model faan9.883166432380676
+Average loss epoch model wast33.97096037864685
+Average loss epoch model para34.027027010917664
+Average loss epoch model bove5.095417182892561
+Average loss epoch model chct37.49512481689453
+Average loss epoch model farg69.76091122627258
+Average loss epoch model abbc34.80110114812851
+Average loss epoch model afck61.04878568649292
+Average loss epoch model vees49.73068290948868
+Average loss epoch model vogo90.079958319664
+Epoch 4
+-------------------------------
+Average loss epoch model huca4.389387845993042
+Average loss epoch model clck5.06119179725647
+Average loss epoch model ranz3.896184742450714
+Average loss epoch model fani4.41156280040741
+Average loss epoch model thet14.31925880908966
+Average loss epoch model mpws8.49381697177887
+Average loss epoch model peck8.757179737091064
+Average loss epoch model obry10.868542194366455
+Average loss epoch model faly13.490183234214783
+Average loss epoch model faan13.1727534532547
+Average loss epoch model thal21.582249879837036
+Average loss epoch model para44.83226478099823
+Average loss epoch model wast44.599409341812134
+Average loss epoch model bove5.949182111769915
+Average loss epoch model chct49.79011249542236
+Average loss epoch model farg84.65126502513885
+Average loss epoch model afck81.03597962856293
+Average loss epoch model abbc46.21711879968643
+Average loss epoch model vees60.862443685531616
+Average loss epoch model vogo119.12396514415741
+Epoch 5
+-------------------------------
+Average loss epoch model fani5.511048436164856
+Average loss epoch model huca5.488327145576477
+Average loss epoch model clck6.120933651924133
+Average loss epoch model ranz4.5684009194374084
+Average loss epoch model obry13.55134916305542
+Average loss epoch model faly16.362329483032227
+Average loss epoch model peck10.901942372322083
+Average loss epoch model thet18.20783829689026
+Average loss epoch model mpws10.53392618894577
+Average loss epoch model faan16.461429953575134
+Average loss epoch model thal26.95272183418274
+Average loss epoch model wast54.87424039840698
+Average loss epoch model para55.53272354602814
+Average loss epoch model bove6.841688461601734
+Average loss epoch model chct60.1783367395401
+Average loss epoch model farg98.9331721663475
+Average loss epoch model abbc57.6490164399147
+Average loss epoch model afck100.99959290027618
+Average loss epoch model vees72.13655531406403
+Average loss epoch model vogo147.75488662719727
+Results model na 2 epochs thal
+Macro F1-score
+0.10416666666666667
+Micro F1 - score
+0.45454545454545453
+Results model na 2 epochs peck
+Macro F1-score
+0.16666666666666666
+Micro F1 - score
+0.3333333333333333
+Results model na 2 epochs obry
+Macro F1-score
+0.15
+Micro F1 - score
+0.42857142857142855
+Results model na 2 epochs huca
+Macro F1-score
+0.16666666666666666
+Micro F1 - score
+0.3333333333333333
+Results model na 2 epochs mpws
+Macro F1-score
+0.24999999999999997
+Micro F1 - score
+0.6
+Results model na 2 epochs faan
+Macro F1-score
+0.17777777777777778
+Micro F1 - score
+0.36363636363636365
+Results model na 2 epochs abbc
+Macro F1-score
+0.22564102564102564
+Micro F1 - score
+0.5116279069767442
+Results model na 2 epochs clck
+Macro F1-score
+0.16666666666666666
+Micro F1 - score
+0.3333333333333333
+Results model na 2 epochs vogo
+Macro F1-score
+0.06666666666666667
+Micro F1 - score
+0.36363636363636365
+Results model na 2 epochs farg
+Macro F1-score
+0.09701492537313432
+Micro F1 - score
+0.6341463414634146
+Results model na 2 epochs faly
+Macro F1-score
+0.11111111111111112
+Micro F1 - score
+0.2857142857142857
+Results model na 2 epochs afck
+Macro F1-score
+0.05574912891986063
+Micro F1 - score
+0.18604651162790695
+Results model na 2 epochs vees
+Macro F1-score
+0.20930232558139536
+Micro F1 - score
+0.72
+Results model na 2 epochs fani
+Macro F1-score
+0.0
+Micro F1 - score
+0.0
+Results model na 2 epochs chct
+Macro F1-score
+0.1568627450980392
+Micro F1 - score
+0.45714285714285713
+Results model na 2 epochs ranz
+Macro F1-score
+1.0
+Micro F1 - score
+1.0
+Results model na 2 epochs bove
+Macro F1-score
+0.4915254237288135
+Micro F1 - score
+0.9666666666666667
+Results model na 2 epochs wast
+Macro F1-score
+0.08333333333333333
+Micro F1 - score
+0.3157894736842105
+Results model na 2 epochs thet
+Macro F1-score
+0.10256410256410255
+Micro F1 - score
+0.4444444444444444
+Results model na 2 epochs para
+Macro F1-score
+0.04926108374384237
+Micro F1 - score
+0.20833333333333334
+
+Process finished with exit code 0

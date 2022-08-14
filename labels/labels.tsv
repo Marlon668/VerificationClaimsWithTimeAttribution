@@ -1,0 +1,26 @@
+abbc	in-between,in-the-red,in-the-green
+afck	correct,incorrect,mostly-correct,unproven,misleading,understated,exaggerated
+bove	none,rating: false
+chct	verdict: true,verdict: false,verdict: unsubstantiated,none
+clck	incorrect,unsupported,misleading
+faan	factscan score: false,factscan score: true,factscan score: misleading
+faly	true,none,partly true,unverified,false
+fani	conclusion: accurate,conclusion: false,conclusion: unclear
+farg	false,none,distorts the facts,misleading,spins the facts,no evidence,not the whole story,unsupported,cherry picks,exaggerates
+goop	0,1,2,3,4,10
+hoer	facebook scams,true messages,bogus warning,statirical reports,fake news,unsubstantiated messages,misleading recommendations
+huca	a lot of baloney,a little baloney,some baloney
+mpws	accurate,false,misleading
+obry	mostly true,verified,unobservable,mostly false
+para	mostly false,mostly true,half-true,false,true,pants on fire!,half flip
+peck	false,true,partially true
+pomt	half-true,false,mostly true,mostly false,true,pants on fire!,full flop,half flip,no flip
+pose	promise kept,promise broken,compromise,in the works,not yet rated,stalled
+ranz	fact,fiction
+snes	false,true,mixture,unproven,mostly false,mostly true,miscaptioned,legend,outdated,misattributed,scam,correct attribution
+thet	none,mostly false,mostly true,half true,false,true
+thal	none,we rate this claim false,mostly false,mostly true,unproven,half true
+tron	fiction!,truth!,unproven!,truth! & fiction!,mostly fiction!,none,disputed!,truth! & misleading!,authorship confirmed!,mostly truth!,incorrect attribution!,scam!,investigation pending!,confirmed authorship!,commentary!,previously truth! now resolved!,outdated!,truth! & outdated!,virus!,fiction! & satire!,truth! & unproven!,misleading!,grass roots movement!,opinion!,correct attribution!,truth! & disputed!,inaccurate attribution!
+vees	none,fake,misleading,false
+vogo	none,determination: false,determination: true,determination: mostly true,determination: misleading,determination: barely true,determination: huckster propaganda,determination: false,determination: a stretch
+wast	4 pinnochios,3 pinnochios,2 pinnochios,false,not the whole story,needs context,none
