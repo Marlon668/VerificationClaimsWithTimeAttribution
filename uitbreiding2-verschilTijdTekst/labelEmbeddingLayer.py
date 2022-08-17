@@ -171,7 +171,7 @@ def train_loop(dataloader, model):
     size = len(dataloader.dataset)
     totalLoss = 0
     # Bert transformer for embedding the word captions
-    #transformer = SentenceTransformer('paraphrase-distilroberta-base-v1')
+    #transformer = SentenceTransformer('paraphrase-distilroberta-basisModel-v1')
     for c in dataloader:
         # Compute prediction and loss
         # outcome of feedforwarding feature vector to image neural network

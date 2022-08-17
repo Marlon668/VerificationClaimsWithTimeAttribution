@@ -26,7 +26,7 @@ import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
 import torch
 from torch.utils.data import DataLoader

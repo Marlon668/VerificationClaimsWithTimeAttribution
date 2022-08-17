@@ -24,7 +24,7 @@ import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
 import torch
 from torch.utils.data import DataLoader
@@ -547,7 +547,7 @@ with torch.no_grad():
         standaardLabelsAllEverything3.extend(standaardLabelAllDomainEverything)
     file = open("resultPearson/biLSTM/versusBase/AllDomains","w")
     
-    print("All domains for base versus time,absolute and everything")
+    print("All domains for basisModel versus time,absolute and everything")
     print("Ranking")
     print("Gemiddelde all : " + str(np.mean(pearsonAll)))
     print("Deviatie all : "  + str(np.std(pearsonAll)))
@@ -595,7 +595,7 @@ with torch.no_grad():
     print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything)))
     print(numberEqual1)
     
-    file.write("All domains for base versus time,absolute and everything"+"\n")
+    file.write("All domains for basisModel versus time,absolute and everything"+"\n")
     file.write("Ranking"+"\n")
     file.write("Gemiddelde all : " + str(np.mean(pearsonAll))+"\n")
     file.write("Deviatie all : " + str(np.std(pearsonAll))+"\n")

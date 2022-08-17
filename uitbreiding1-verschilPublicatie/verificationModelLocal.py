@@ -101,7 +101,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
     loss = nn.CrossEntropyLoss(reduction="sum")
     totalLoss = 0
     # Bert transformer for embedding the word captions
-    #transformer = SentenceTransformer('paraphrase-distilroberta-base-v1')
+    #transformer = SentenceTransformer('paraphrase-distilroberta-basisModel-v1')
     with torch.no_grad():
         for c in dataloader:
             # Compute prediction and loss
@@ -306,9 +306,9 @@ if __name__ == "__main__":
         test_set = dump_load("test/time/testDataset-" + domain)
         dev_set = dump_load("dev/time/devDataset-" + domain)
         train_set = dump_load("train/time/trainDataset-" + domain)
-        #train_set = dump_load("train/base/trainDataset-"+domain)
-        #dev_set = dump_load("dev/base/devDataset-"+domain)
-        #test_set = dump_load("test/base/testDataset-" + domain)
+        #train_set = dump_load("train/basisModel/trainDataset-"+domain)
+        #dev_set = dump_load("dev/basisModel/devDataset-"+domain)
+        #test_set = dump_load("test/basisModel/testDataset-" + domain)
         #dev_set = NUS(mode='Dev', path='dev/dev-'+ domain + '.tsv')
         #dump_write(dev_set, "dev/time/devDataset-"+domain)
         #train_set = NUS(mode='Train', path='train/train-' + domain + '.tsv')

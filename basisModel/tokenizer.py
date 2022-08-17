@@ -100,7 +100,7 @@ tokenizer.train(files=["words/words.txt"], vocab_size=50000, min_frequency=2,
                     '[PAD]', '[UNK]', '[CLS]', '[SEP]', '[MASK]']
                 )
 
-#os.mkdir('base/bert-it')
+#os.mkdir('basisModel/bert-it')
 
 tokenizer.save_model('bert-it')
 '''

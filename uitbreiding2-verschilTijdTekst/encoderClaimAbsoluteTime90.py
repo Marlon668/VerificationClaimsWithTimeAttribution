@@ -15,7 +15,7 @@ class encoderAbsolute(nn.Module):
     def __init__(self,embedding_dim, hidden_dim,number_layers=2,drop_out=0.1):
         super(encoderAbsolute, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/paraphrase-distilroberta-base-v1')
+        self.tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/paraphrase-distilroberta-basisModel-v1')
         self.embedding_dim = embedding_dim
         self.hidden_dim = hidden_dim
         self.word_embeds = nn.Embedding(self.tokenizer.vocab_size, embedding_dim).to(self.device)
@@ -112,7 +112,7 @@ if __name__ == "__main__":
     model = encoderTokens(100,10)
     # Loading in the train-set
 
-    train_set = dump_load('base/trainLoader')
+    train_set = dump_load('basisModel/trainLoader')
 
     # dataloader for the train-set
     train_loader = DataLoader(train_set,

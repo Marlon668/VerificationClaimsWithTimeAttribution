@@ -20,7 +20,7 @@ import verificationModelAbsoluteTimeBERTAdamWAdding10A
 import verificationModelAbsoluteTimeBERTAdamWAdding10B
 import verificationModelAbsoluteTimeBERTAdamWAddingEverything2020A
 import verificationModelAbsoluteTimeBERTAdamWAddingEverything2020B
-from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelBERT, verificationModelBERT2
 import torch
 from torch.utils.data import DataLoader
@@ -973,7 +973,7 @@ with torch.no_grad():
         standaardLabelsAllEverything3.extend(standaardLabelAllDomainEverything)
     file = open("resultspearman/BERT/versusBase/AllDomains", "w")
     '''
-    print("All domains for base versus time,absolute and everything")
+    print("All domains for basisModel versus time,absolute and everything")
     print("Ranking")
     print("Gemiddelde all : " + str(np.mean(spearmanAll)))
     print("Deviatie all : "  + str(np.std(spearmanAll)))
@@ -1021,7 +1021,7 @@ with torch.no_grad():
     print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything)))
     print(numberEqual1)
     '''
-    file.write("All domains for base versus time,absolute and everything" + "\n")
+    file.write("All domains for basisModel versus time,absolute and everything" + "\n")
     file.write("Ranking" + "\n")
     file.write("Gemiddelde all : " + str(np.mean(spearmanAll)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAll)) + "\n")

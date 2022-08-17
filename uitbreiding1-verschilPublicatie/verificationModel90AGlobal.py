@@ -282,7 +282,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
     loss = nn.CrossEntropyLoss(reduction="sum")
     totalLoss = 0
     # Bert transformer for embedding the word captions
-    #transformer = SentenceTransformer('paraphrase-distilroberta-base-v1')
+    #transformer = SentenceTransformer('paraphrase-distilroberta-basisModel-v1')
     with torch.no_grad():
         for c in dataloader:
             # Compute prediction and loss

@@ -31,7 +31,7 @@ def makeDataset(mode,path):
                     doc = f.read()
                     words = nlp(doc)
                     for token in words:
-                        with open("base/words/words.txt", 'a', encoding='utf-8') as fp:
+                        with open("basisModel/words/words.txt", 'a', encoding='utf-8') as fp:
                             fp.write(str(token))
                             fp.write('\n')
                             fp.close()
@@ -41,7 +41,7 @@ def makeDataset(mode,path):
                         doc = f.read()
                         words = nlp(doc)
                         for token in words:
-                            with open("base/words/words.txt", 'a', encoding='utf-8') as fp:
+                            with open("basisModel/words/words.txt", 'a', encoding='utf-8') as fp:
                                 fp.write(str(token))
                                 fp.write('\n')
                                 fp.close()
@@ -58,7 +58,7 @@ def makeDataset(mode,path):
                     doc = f.read()
                     words = nlp(doc)
                     for word in words:
-                        with open("base/words/words.txt", 'a', encoding='utf-8') as fp:
+                        with open("basisModel/words/words.txt", 'a', encoding='utf-8') as fp:
                             fp.write(str(word))
                             fp.write('\n')
                             fp.close()
@@ -68,7 +68,7 @@ def makeDataset(mode,path):
                         doc = f.read()
                         words = nlp(doc)
                         for word in words:
-                            with open("base/words/words.txt", 'a', encoding='utf-8') as fp:
+                            with open("basisModel/words/words.txt", 'a', encoding='utf-8') as fp:
                                 fp.write(str(word))
                                 fp.write('\n')
                                 fp.close()
@@ -90,20 +90,20 @@ tokenizer = BertWordPieceTokenizer(
     lowercase=False
 )
 
-tokenizer.train(files=["base/words/words.txt"], vocab_size=100000, min_frequency=2,
+tokenizer.train(files=["basisModel/words/words.txt"], vocab_size=100000, min_frequency=2,
                 limit_alphabet=1000, wordpieces_prefix='##',
                 special_tokens=[
                     '[PAD]', '[UNK]', '[CLS]', '[SEP]', '[MASK]']
                 )
 
-#os.mkdir('base/bert-it')
+#os.mkdir('basisModel/bert-it')
 
-tokenizer.save_model('base/bert-it')
-tokenizer = BertTokenizer.from_pretrained('base/bert-it',do_lower_case=False,add_special_tokens=False)
+tokenizer.save_model('basisModel/bert-it')
+tokenizer = BertTokenizer.from_pretrained('basisModel/bert-it',do_lower_case=False,add_special_tokens=False)
 print(tokenizer.all_special_tokens)
 print(tokenizer.all_special_ids)
 
-with open('base/bert-it/vocab.txt', 'r',encoding="utf8") as fp:
+with open('basisModel/bert-it/vocab.txt', 'r',encoding="utf8") as fp:
     vocab = fp.read().split('\n')
 
 input_ids = [i for i in tokenizer.encode(text='Is this an image of subtropical storm Alberto approaching Pensacola beach?') if i not in {0,2,4}]

@@ -6,7 +6,7 @@ from torch import nn
 
 import torch.nn.functional as F
 from transformers import BertTokenizer
-from base.OneHotEncoderBasis import oneHotEncoder
+from basisModel.OneHotEncoderBasis import oneHotEncoder
 
 class instanceEncoder(nn.Module):
     # Create neural network

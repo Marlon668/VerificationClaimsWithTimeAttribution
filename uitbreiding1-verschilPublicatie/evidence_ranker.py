@@ -92,7 +92,7 @@ def train_loop(dataloader, model,oneHotEncoder):
     size = len(dataloader.dataset)
     totalLoss = 0
     # Bert transformer for embedding the word captions
-    #transformer = SentenceTransformer('paraphrase-distilroberta-base-v1')
+    #transformer = SentenceTransformer('paraphrase-distilroberta-basisModel-v1')
     for c in dataloader:
         # Compute prediction and loss
         # outcome of feedforwarding feature vector to image neural network
@@ -109,12 +109,12 @@ def train_loop(dataloader, model,oneHotEncoder):
 
 if __name__ == "__main__":
 
-    oneHotEncoder = oneHotEncoder('base/Metadata_sequence/all.txt')
+    oneHotEncoder = oneHotEncoder('basisModel/Metadata_sequence/all.txt')
     # loading the configurations of the neural network
     model = evidenceRanker(4,4)
     # Loading in the train-set
 
-    train_set = dump_load('base/trainLoader')
+    train_set = dump_load('basisModel/trainLoader')
 
     # dataloader for the train-set
     train_loader = DataLoader(train_set,
