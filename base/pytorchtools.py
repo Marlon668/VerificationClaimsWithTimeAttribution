@@ -1,6 +1,11 @@
+import sys
+
 import numpy as np
 import torch
 
+'''
+Code based on https://github.com/Bjarten/early-stopping-pytorch
+'''
 class EarlyStopping:
     """Early stops the training if validation loss doesn't improve after a given patience."""
     def __init__(self, patience=5, verbose=False, delta=0,min_epochs=150, path='checkpoint.pt', trace_func=print):
@@ -54,7 +59,7 @@ class EarlyStopping:
             self.trace_func(f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).  Saving model ...')
             self.lastResult = f'Validation loss decreased ({self.val_loss_min:.6f} --> {val_loss:.6f}).'
         self.better = True
-        model.saving_NeuralNetwork()
+        model.saving_NeuralNetwork(sys.argv[1])
         self.val_loss_min = val_loss
     def getLastResult(self):
         return  self.lastResult

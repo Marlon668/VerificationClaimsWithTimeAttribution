@@ -20,8 +20,8 @@ import verificationModelAbsoluteTimeBERTAdamWAdding10A
 import verificationModelAbsoluteTimeBERTAdamWAdding10B
 import verificationModelAbsoluteTimeBERTAdamWAddingEverything2020A
 import verificationModelAbsoluteTimeBERTAdamWAddingEverything2020B
-from base import OneHotEncoderB, labelEmbeddingLayerB, verificationModelB, encoderClaimB, encoderMetadataB, \
-    instanceEncoderB, evidence_rankerB, labelMaskDomainB, verificationModelBERT, verificationModelBERT2
+from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelBERT, verificationModelBERT2
 import torch
 from torch.utils.data import DataLoader
 from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
@@ -615,27 +615,27 @@ with torch.no_grad():
     for model in models:
         domain = model[1]
         print("Start loading model " + domain)
-        oneHotEncoderBasis = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerBasis = labelEmbeddingLayerB.labelEmbeddingLayer(2308, domainIndices)
+        oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataBasis = encoderMetadataB.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
-        instanceEncoderBasis = instanceEncoderB.instanceEncoder().to(device)
-        evidenceRankerBasis = evidence_rankerB.evidenceRanker(2308, 100).to(device)
-        labelMaskDomainBasis = labelMaskDomainB.labelMaskDomain(2308, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
+        instanceEncoderBasis = instanceEncoderBasis.instanceEncoder().to(device)
+        evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(2308, 100).to(device)
+        labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
         basisModel = verificationModelBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis, evidenceRankerBasis, labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices, domainWeights, domain)
         basisModel.loading_NeuralNetwork()
-        oneHotEncoderBasis2 = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerBasis2 = labelEmbeddingLayerB.labelEmbeddingLayer(2308, domainIndices)
+        oneHotEncoderBasis2 = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        labelEmbeddingLayerBasis2 = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataBasis2 = encoderMetadataB.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
-        instanceEncoderBasis2 = instanceEncoderB.instanceEncoder().to(device)
-        evidenceRankerBasis2 = evidence_rankerB.evidenceRanker(2308, 100).to(device)
-        labelMaskDomainBasis2 = labelMaskDomainB.labelMaskDomain(2308, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
+        instanceEncoderBasis2 = instanceEncoderBasis.instanceEncoder().to(device)
+        evidenceRankerBasis2 = evidence_rankerBasis.evidenceRanker(2308, 100).to(device)
+        labelMaskDomainBasis2 = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
         basisModel2 = verificationModelBERT2.verifactionModel(transformer,encoderMetadataBasis, instanceEncoderBasis,
                                             evidenceRankerBasis,
                                             labelEmbeddingLayerBasis,labelMaskDomainBasis, domainIndices,domainWeights,domain)
         basisModel2.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -646,7 +646,7 @@ with torch.no_grad():
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain).to(device)
         verificationModelTime75A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -657,7 +657,7 @@ with torch.no_grad():
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain).to(device)
         verificationModelTime75B.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -668,7 +668,7 @@ with torch.no_grad():
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain).to(device)
         verificationModelTimeAbsolute10A .loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -679,7 +679,7 @@ with torch.no_grad():
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain).to(device)
         verificationModelTimeAbsolute10B .loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -691,7 +691,7 @@ with torch.no_grad():
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain).to(device)
         verificationModelTimeEverything2020A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)

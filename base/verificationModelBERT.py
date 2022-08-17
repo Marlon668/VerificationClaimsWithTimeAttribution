@@ -13,7 +13,7 @@ from labelMaskDomain import labelMaskDomain
 from dataset import dump_load, dump_write, NUS
 from encoderClaim import encoderClaim
 from encoderEvidence import encoderEvidence
-from encoderMetadata import encoderMetadata
+from encoderMetadataBasis import encoderMetadata
 from evidence_ranker import evidenceRanker
 from instanceEncoder import instanceEncoder
 from labelEmbeddingLayer import labelEmbeddingLayer
@@ -110,32 +110,15 @@ class verifactionModel(nn.Module):
     '''
     Function for saving the neural network
     '''
-    def saving_NeuralNetwork(model):
-        pathI = "D:/models/basis/modelsBERT1/" + model.domain
-        if not os.path.exists(pathI):
+    def saving_NeuralNetwork(model,path):
+        if not os.path.exists(path):
             os.mkdir(pathI)
-        #model.metaDataEncoder.saving_NeuralNetwork(pathI + '/encoderMetadata')
-        #model.instanceEncoder.saving_NeuralNetwork(pathI + '/instanceEncoder')
-        #model.evidenceRanker.saving_NeuralNetwork(pathI+ '/evidenceRanker')
-        #model.labelMaskDomain.saving_NeuralNetwork(pathI + '/labelMaskDomain')
-        #model.labelEmbedding.saving_NeuralNetwork(pathI + '/labelEmbedding')
-        torch.save(model.state_dict(), pathI + '/model')
+        torch.save(model.state_dict(), path + '/model')
     '''
     Function for loading the configurations from a file
-    It first reads the configurations of a file
-    Then it initialises a neural network with the parameters of the file
-    Then it sets the neural network on the state of the loaded neural network
     '''
-    def loading_NeuralNetwork(model):
-        pathI ="D:/models/basis/modelsBERT1/" + model.domain
-        #model.claimEncoder = model.claimEncoder.loading_NeuralNetwork(pathI+'/claimEncoder')
-        #model.evidenceEncoder = model.evidenceEncoder.loading_NeuralNetwork(pathI + '/evidenceEncoder')
-        #model.metaDataEncoder.loading_NeuralNetwork(pathI + '/encoderMetadata')
-        #model.instanceEncoder.loading_NeuralNetwork(pathI + '/instanceEncoder')
-        #model.evidenceRanker.loading_NeuralNetwork(pathI + '/evidenceRanker')
-        #model.labelMaskDomain.loading_NeuralNetwork(pathI + '/labelMaskDomain')
-        #model.labelEmbedding.loading_NeuralNetwork(pathI + '/labelEmbedding')
-        model.load_state_dict(torch.load(pathI + '/model',map_location=torch.device('cpu')))
+    def loading_NeuralNetwork(model,path):
+        model.load_state_dict(torch.load(path + '/model',map_location=torch.device('cpu')))
         model.eval()
         return model
 
@@ -221,7 +204,6 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
         domainWeights[parts[0]] = torch.zeros(len(weightsDomainNormal))
         for i in range(len(weightsDomainNormal)):
             domainWeights[parts[0]][domainLabelIndices[parts[0]][i]] = float(weightsDomainNormal[i])
-    #print(domainWeights)
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
 def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,device):
@@ -354,30 +336,26 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #device2 = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
     domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence','labels/weights.tsv')
     oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
     domains = domainIndices.keys()
-    #domains = {sys.argv[1]}
+    domains = {"huca"}
     metadataSet = set()
     labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
     domainModels = []
     losses = np.zeros(len(domains))
     index = 0
-    #encoderMetadataM = encoderMetadata(3,3,oneHotEncoderM)
-    #encoderMetadataM = nn.parallel.DistributedDataParallel(encoderMetadataM,device_ids=[device])
     transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
     encoderMetadataM = encoderMetadata(3, 3, oneHotEncoderM).to(device)
     instanceEncoderM = instanceEncoder().to(device)
-    #instanceEncoderM = nn.parallel.DistributedDataParallel(instanceEncoder(),device_ids=[device1])
     evidenceRankerM = evidenceRanker(2308, 100).to(device)
-    #evidenceRankerM = nn.parallel.DistributedDataParallel(evidenceRankerM,device_ids=[device])
     for domain in domains:
-        train_set = dump_load("train/base/trainDataset-"+domain)
-        dev_set = dump_load("dev/base/devDataset-"+domain)
-        test_set = dump_load("test/base/testDataset-" + domain)
-            #test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
-            #dump_write(test_set, "test/base/testDataset-" + domain)
+        #train_set = dump_load("train/base/trainDataset-"+domain)
+        #dev_set = dump_load("dev/base/devDataset-"+domain)
+        #test_set = dump_load("test/base/testDataset-" + domain)
+        train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain)
+        dev_set = NUS(mode='Dev', path=os.pardir + '/dev/dev-' + domain + '.tsv', domain=domain)
+        test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv', domain=domain)
         trainMetadata = train_set.getMetaDataSet()
         devMetadata = dev_set.getMetaDataSet()
         testMetadata = test_set.getMetaDataSet()
@@ -394,9 +372,6 @@ if __name__ == "__main__":
                                 batch_size=32,
                                 shuffle=True)
         labelMaskDomainM = labelMaskDomain(2308,domainIndices,domain,len(domainIndices[domain]))
-        #labelMaskDomainM = nn.parallel.DistributedDataParallel(labelMaskDomainM,device_ids=[device])
-        # labelSequence, domainsNew = readLabels('labels/labels.tsv', 'labels/labelSequence')
-
         verificationModelM = verifactionModel(transformer,encoderMetadataM, instanceEncoderM,
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain)
@@ -405,14 +380,9 @@ if __name__ == "__main__":
         domainModel = [train_loader, dev_loader, test_loader, verificationModelM, optimizer1, domain, index, optimizer2]
         domainModels.append(domainModel)
         index += 1
-    # writeMetadata(metadataSet)
-    # dataloader for the train-set
-    # dataloader for the test-set
+
     # number of epochs
     epochs = 300
-    # This is the bestAcc we have till now
-    bestAcc = 0
-    # retrain = {'afck','bove','chct','clck','faly','farg','hoer','mpws','para','peck','pomt','pose','snes','thal','thet','tron','vees','vogo','wast'}
 
     models = set()
     with torch.no_grad():
@@ -426,18 +396,17 @@ if __name__ == "__main__":
             validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
                                                           domainLabelIndices, device)
             early_stopping(validation_loss, microF1, macroF1, NNmodel)
-            optimizer1 = AdamW(NNmodel.parameters(), lr=5e-3)
+            optimizer = AdamW(NNmodel.parameters(), lr=5e-3)
             numberOfTrainingSteps = 6000
             scheduler = get_linear_schedule_with_warmup(
-                optimizer1, num_warmup_steps=0,
+                optimizer, num_warmup_steps=0,
                 num_training_steps=numberOfTrainingSteps
             )
             # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer1, gamma=0.95)
-            optimizer2 = optimizer1
             models.add(
-                tuple([iter(model[0]), model[1], optimizer1, model[5],
+                tuple([iter(model[0]), model[1], optimizer, model[5],
                        model[6], model[2], 0, model[0], early_stopping,
-                       optimizer2, model[3], scheduler]))
+                       model[3], scheduler]))
 
     #preprocessing(models)
 
@@ -518,7 +487,7 @@ if __name__ == "__main__":
     microF1All = 0
     macroF1All = 0
     for model in domainModels:
-        NNmodel = loading_NeuralNetwork(model[3]).to(device)
+        NNmodel = model[3].loading_NeuralNetwork(sys.args[1]).to(device)
         print("Results model na epochs " + model[5])
         calculatePrecisionDev(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
         validation_loss, microF1, macroF1 = eval_loop(model[2], NNmodel, oneHotEncoderM, domainLabels,

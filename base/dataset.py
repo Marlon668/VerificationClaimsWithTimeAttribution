@@ -41,7 +41,7 @@ class NUS(Dataset):
                     claim = Claim.claim(elements[0], elements[1], elements[2], elements[3], elements[4], elements[5],
                                         elements[6],
                                         elements[7], elements[8], elements[9], elements[10], elements[11], elements[12],
-                                        "snippets/", predictorOIE, predictorNER, nlp, coreference)
+                                        os.pardir+"/snippets/", predictorOIE, predictorNER, nlp, coreference)
 
                     metadata = ''
                     # speaker
@@ -77,7 +77,7 @@ class NUS(Dataset):
                 print(len(self.snippetDocs))
         else:
             labelsTest = dict()
-            pathLabels = 'test/test-'+ self.domain + '-labels.tsv'
+            pathLabels = os.pardir + '/test/test-'+ self.domain + '-labels.tsv'
             with open(pathLabels, 'r', encoding='utf-8') as fileL:
                 for line in fileL:
                     elements = line.split('\t')
@@ -89,7 +89,7 @@ class NUS(Dataset):
                     claim = Claim.claim(elements[0], elements[1], labelsTest[elements[0]], elements[2], elements[3], elements[4], elements[5],
                                         elements[6],
                                         elements[7], elements[8], elements[9], elements[10], elements[11],
-                                        "snippets/", predictorOIE, predictorNER, nlp, coreference)
+                                        os.pardir+"/snippets/", predictorOIE, predictorNER, nlp, coreference)
 
                     metadata = ''
                     # speaker
@@ -124,9 +124,14 @@ class NUS(Dataset):
                 print(len(self.snippetDocs))
 
     def getClaimText(self,claim):
-        basepath = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-        file = open(basepath + "/text" + "/" + claim.claimID + "/" + "claim",encoding="utf-8")
-        return file.read()
+        return claim.claim
+
+    def getSnippets(self, snippets):
+        dataSnippets = ''
+        for snippet in snippets:
+            dataSnippets += snippet.article
+            dataSnippets += ' 0123456789 '
+        return dataSnippets
 
     def getMetaDataSet(self):
         return self.metadataSet
@@ -140,15 +145,7 @@ class NUS(Dataset):
 
         return self.claimIds[index], self.documents[index], self.snippetDocs[index],self.metadata[index], self.labels[index]
 
-    def getSnippets(self, snippets):
-        dataSnippets = ''
-        basepath = os.path.normpath(os.getcwd() + os.sep + os.pardir)
-        for snippet in snippets:
-            file = open(basepath + "/text" + "/" + snippet.claimID + "/" + snippet.number,encoding="utf-8")
-            dataSnippets += file.read()
-            dataSnippets += ' 0123456789 '
-            file.close()
-        return dataSnippets
+
 
 
 # Dump dataset into file
@@ -163,17 +160,17 @@ def dump_load(name):
         dataset = pickle.load(f)
     return dataset
 
-
 '''
+domain = "abbc"
 # Check of the dataloader
 # train_set = NUS(mode='Little')
 # dump_write(train_set, "little_dataset")
-train_set = NUS(mode='Dev')
+train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain)
 #train_set.writeMetadata()
 #dump_write(train_set, "trainLoader")
 #train_set = dump_load( "trainLoader")
 train_loader = DataLoader(train_set,
-                          batch_size=32,
+                          batch_size=4,
                           shuffle=True)
 for c in train_loader:
     print('Claim-ID')
@@ -189,4 +186,5 @@ for c in train_loader:
     print('metadata:')
     print('Label:')
     print(c[4])
+    break
 '''

@@ -26,8 +26,8 @@ import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from base import OneHotEncoderB, labelEmbeddingLayerB, verificationModelB, encoderClaimB, encoderMetadataB, \
-    instanceEncoderB, evidence_rankerB, labelMaskDomainB, verificationModelC, verificationModelD
+from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
 import torch
 from torch.utils.data import DataLoader
 from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
@@ -325,7 +325,7 @@ labelsAllAllIndicesAbsolute = [{},{},{}]
 with torch.no_grad():
     for model in models:
         domain = model[1]
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
@@ -344,7 +344,7 @@ with torch.no_grad():
                                                                                                             domain).to(
             device)
         verificationModelTimeAbsolute10A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)

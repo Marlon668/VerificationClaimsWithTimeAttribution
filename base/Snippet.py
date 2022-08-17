@@ -30,7 +30,6 @@ class snippet:
             index = part.find("Published")
             if index!=(-1):
                 self.optional = part[index:]
-                #print(self.claimID + " - " + self.number + " : " + self.optional)
             else:
                 index = part.find("Posted")
                 if index!= (-1):
@@ -106,13 +105,6 @@ class snippet:
         path = "OpenInformation" + "/" + self.claimID + "/" + self.number
         f = open(path, "r", encoding="utf-8")
         openInfo = json.load(f)
-        '''
-        for element in openInfo:
-            for verb in element['verbs']:
-                print(verb['description'])
-                print(verb['tags'])
-                print(element['words'])
-        '''
         return openInfo
 
 
@@ -167,33 +159,6 @@ class snippet:
                 processed = self.processSentence(sentence)
                 if processed is not None:
                     part.append(processed)
-            snippet.append(part)
-        string ="The evidence "
-        if len(title)>0:
-            string += "with the title '"
-            string += title
-            string += "' "
-        string += "says "
-        for part in snippet:
-            for sen in part:
-                string += sen
-            string += " ... "
-        string = string[:-5]
-        return string
-
-    def getSnippetText2(self):
-        document = self.parts
-        snippet = []
-        title = ""
-        if self.title != "None":
-            sentences = self.spacy(self.title)
-            for sentence in sentences.sents:
-                title += str(sentence)
-        for sen in document:
-            sentences = self.spacy(sen)
-            part = []
-            for sentence in sentences.sents:
-                part.append(str(sentence))
             snippet.append(part)
         string ="The evidence "
         if len(title)>0:

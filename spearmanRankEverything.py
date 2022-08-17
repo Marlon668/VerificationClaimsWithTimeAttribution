@@ -24,8 +24,8 @@ import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from base import OneHotEncoderB, labelEmbeddingLayerB, verificationModelB, encoderClaimB, encoderMetadataB, \
-    instanceEncoderB, evidence_rankerB, labelMaskDomainB, verificationModelC, verificationModelD
+from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
 import torch
 from torch.utils.data import DataLoader
 from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
@@ -465,7 +465,7 @@ timesAllOccurenceA = {}
 
 with torch.no_grad():
     for model in models:
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
         encoderM = encoderClaimAbsoluteTimeEverything2040.encoderAbsolute(300, 128).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
@@ -480,7 +480,7 @@ with torch.no_grad():
             domainIndices, domainWeights,
             model[1]).to(device)
         verificationModelTimeEverything2040A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
         encoderM = encoderClaimAbsoluteTimeEverything2040.encoderAbsolute(300, 128).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
@@ -495,7 +495,7 @@ with torch.no_grad():
             domainIndices, domainWeights,
             model[1]).to(device)
         verificationModelTimeEverything2040B.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
         encoderM = encoderClaimAbsoluteTimeEverything2040.encoderAbsolute(300, 128).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)

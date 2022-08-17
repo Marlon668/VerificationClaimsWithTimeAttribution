@@ -1,2 +1,3 @@
-__all__ = ["verificationModelB","OneHotEncoderB","labelEmbeddingLayerB","encoderClaimB","encoderMetadataB","instanceEncoderB",
-           "evidence_rankerB","labelMaskDomainB"]
+__all__ = ["verificationModelBasis.py", "OneHotEncoderBasis.py", "labelEmbeddingLayerBasis.py", "encoderBasis.py", "encoderMetadataB",
+           "instanceEncoderBasis.py",
+           "evidence_rankerBasis.py", "labelMaskDomainBasis.py"]

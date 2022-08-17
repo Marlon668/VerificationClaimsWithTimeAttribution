@@ -29,8 +29,8 @@ import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
 import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from base import OneHotEncoderB, labelEmbeddingLayerB, verificationModelB, encoderClaimB, encoderMetadataB, \
-    instanceEncoderB, evidence_rankerB, labelMaskDomainB, verificationModelC, verificationModelD
+from base import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
+    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
 import torch
 from torch.utils.data import DataLoader
 from datasetIteratie2CombinerOld2 import dump_load, dump_write, NUS
@@ -355,7 +355,7 @@ def random_baseline_integrated_gradients(inputs,metadata_encoding, model, target
     return integrated_gradEncoding,integrated_gradTimeAbsolute,integrated_gradTimeVerschil
 
 if __name__ == '__main__':
-    oneHotEncoderBasis = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+    oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
         'timeModels/labels/labels.tsv', 'timeModels/labels/labelSequence', 'timeModels/labels/weights.tsv')
@@ -375,7 +375,7 @@ if __name__ == '__main__':
 
 
     for data in datas:
-        oneHotEncoderM = OneHotEncoderB.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
         encoderM = encoderClaimAbsoluteTimeEverything2040.encoderAbsolute(300, 128).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
