@@ -9,21 +9,23 @@ import torch.nn.functional as F
 import torch
 from torch.utils.data import DataLoader
 
-from labelMaskDomain import labelMaskDomain
+from labelMaskDomainBasis import labelMaskDomain
 from dataset import dump_load, dump_write, NUS
-from encoderClaim import encoderClaim
-from encoderEvidence import encoderEvidence
 from encoderMetadataBasis import encoderMetadata
-from evidence_ranker import evidenceRanker
-from instanceEncoder import instanceEncoder
-from labelEmbeddingLayer import labelEmbeddingLayer
-from OneHotEncoder import oneHotEncoder
+from evidence_rankerBasis import evidenceRanker
+from instanceEncoderBasis import instanceEncoder
+from labelEmbeddingLayerBasis import labelEmbeddingLayer
+from OneHotEncoderBasis import oneHotEncoder
 from torch import nn
 from sklearn.metrics import f1_score
 from sentence_transformers import SentenceTransformer
 
 from transformers import BertTokenizer, AutoModel, AutoTokenizer, AdamW, get_linear_schedule_with_warmup
 
+'''
+Class representing the base model without time addings with a DistilRoBERTa as encoder for claims and evidences
+For learning a model, just give the path to save a model to.
+'''
 
 class verifactionModel(nn.Module):
     # Create neural network
@@ -112,7 +114,7 @@ class verifactionModel(nn.Module):
     '''
     def saving_NeuralNetwork(model,path):
         if not os.path.exists(path):
-            os.mkdir(pathI)
+            os.mkdir(path)
         torch.save(model.state_dict(), path + '/model')
     '''
     Function for loading the configurations from a file
@@ -125,11 +127,9 @@ class verifactionModel(nn.Module):
 def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,device):
     groundTruthLabels = []
     predictedLabels = []
-    #loss = nn.CrossEntropyLoss(model.domainWeights,reduction='sum')
     loss= nn.CrossEntropyLoss(reduction='sum')
     totalLoss = 0
     # Bert transformer for embedding the word captions
-    #transformer = SentenceTransformer('paraphrase-distilroberta-basisModel-v1')
     with torch.no_grad():
         for c in dataloader:
             # Compute prediction and loss
@@ -306,7 +306,7 @@ def preprocessing(models,epochs=800):
     with torch.no_grad():
         for model in models:
             model[1].eval()
-            validation_loss, microF1Test, macroF1Test = eval_loop(model[11], model[1], oneHotEncoderM, domainLabels,
+            validation_loss, microF1Test, macroF1Test = eval_loop(model[9], model[1], oneHotEncoderM, domainLabels,
                                                           domainLabelIndices, device)
             model[8](validation_loss, microF1Test, macroF1Test, model[1])
     print('Start preprocessing')
@@ -315,8 +315,8 @@ def preprocessing(models,epochs=800):
         newModels = list()
         for model in models:
             batch = next(model[0])
-            loss = train(batch,model[1],oneHotEncoderM,model[9],domainLabels,domainLabelIndices,device,True)
-            model[12].step()
+            loss = train(batch,model[1],oneHotEncoderM,model[2],domainLabels,domainLabelIndices,device,True)
+            model[10].step()
         with torch.no_grad():
             for model in models:
                 it = i
@@ -325,8 +325,8 @@ def preprocessing(models,epochs=800):
                     tuple(
                         [iter(model[7]), model[1], model[2], model[3], model[4], model[5], it, model[7], model[8],
                          model[9],
-                         model[10], model[11],model[12]]))
-                validation_loss, microF1Test, macroF1Test = eval_loop(model[11], model[1], oneHotEncoderM, domainLabels,
+                         model[10]]))
+                validation_loss, microF1Test, macroF1Test = eval_loop(model[9], model[1], oneHotEncoderM, domainLabels,
                                                                       domainLabelIndices, device)
                 model[8](validation_loss, microF1Test, macroF1Test, model[1])
         models = newModels
@@ -336,8 +336,8 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence','labels/weights.tsv')
-    oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
+    domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain(os.pardir+'/labels/labels.tsv',os.pardir+'/labels/labelSequence',os.pardir+'/labels/weights.tsv')
+    oneHotEncoderM = oneHotEncoder(os.pardir+'/Metadata_sequence/metadata')
     domains = domainIndices.keys()
     domains = {"huca"}
     metadataSet = set()
@@ -350,9 +350,15 @@ if __name__ == "__main__":
     instanceEncoderM = instanceEncoder().to(device)
     evidenceRankerM = evidenceRanker(2308, 100).to(device)
     for domain in domains:
-        #train_set = dump_load("train/basisModel/trainDataset-"+domain)
-        #dev_set = dump_load("dev/basisModel/devDataset-"+domain)
-        #test_set = dump_load("test/basisModel/testDataset-" + domain)
+        '''
+                load pre-constructed dataset where the textinput for claim and evidences is title + text
+                '''
+        # train_set = dump_load(os.pardir + "/train/basisModel/trainDataset-" + domain)
+        # dev_set = dump_load(os.pardir + "/dev/basisModel/devDataset-" + domain)
+        # test_set = dump_load(os.pardir + "/test/basisModel/testDataset-" + domain)
+        '''
+        construct dataset where the input for claim and evidences is only text of claim
+        '''
         train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain)
         dev_set = NUS(mode='Dev', path=os.pardir + '/dev/dev-' + domain + '.tsv', domain=domain)
         test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv', domain=domain)
@@ -375,9 +381,7 @@ if __name__ == "__main__":
         verificationModelM = verifactionModel(transformer,encoderMetadataM, instanceEncoderM,
                                             evidenceRankerM,
                                             labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domainWeights,domain)
-        optimizer1 = AdamW(verificationModelM.parameters(), lr=1e-4)
-        optimizer2 = AdamW(verificationModelM.parameters(), lr=1e-4)
-        domainModel = [train_loader, dev_loader, test_loader, verificationModelM, optimizer1, domain, index, optimizer2]
+        domainModel = [train_loader, dev_loader, test_loader, verificationModelM, domain, index]
         domainModels.append(domainModel)
         index += 1
 
@@ -391,63 +395,49 @@ if __name__ == "__main__":
             early_stopping = EarlyStopping(patience=3, verbose=True)
             NNmodel = model[3]
             NNmodel.eval()
-            # print("Results model na epochs " + str(epochs) + ' ' + model[5])
-            # calculatePrecisionDev(model[1], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
             validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
                                                           domainLabelIndices, device)
             early_stopping(validation_loss, microF1, macroF1, NNmodel)
-            optimizer = AdamW(NNmodel.parameters(), lr=5e-3)
+            optimizer = torch.optim.AdamW(NNmodel.parameters(), lr=5e-3)
             numberOfTrainingSteps = 6000
             scheduler = get_linear_schedule_with_warmup(
                 optimizer, num_warmup_steps=0,
                 num_training_steps=numberOfTrainingSteps
             )
-            # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer1, gamma=0.95)
             models.add(
-                tuple([iter(model[0]), model[1], optimizer, model[5],
-                       model[6], model[2], 0, model[0], early_stopping,
-                       model[3], scheduler]))
+                tuple([iter(model[0]), model[3], optimizer, model[4],
+                       model[5], model[2], 0, model[0], early_stopping,
+                       model[1], scheduler]))
 
-    #preprocessing(models)
+    preprocessing(models)
 
     models = set()
     with torch.no_grad():
         for model in domainModels:
             # early_stopping
             early_stopping = EarlyStopping(patience=3, verbose=True)
-            NNmodel = loading_NeuralNetwork(model[3])
+            NNmodel = model[3].loading_NeuralNetwork(sys.argv[1])
             NNmodel.eval()
-            #print("Results model na preprocessing " + ' ' + model[5])
-            #calculatePrecisionDev(model[1], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
+
             validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
                                                           domainLabelIndices, device)
             early_stopping(validation_loss, microF1, macroF1, NNmodel)
-            optimizer1 = AdamW(NNmodel.parameters(), lr=5e-3)
-            numberOfTrainingSteps = 6000
+            optimizer = torch.optim.AdamW(NNmodel.parameters(), lr=1e-4)
+            numberOfTrainingSteps = len(model[0])
+            if numberOfTrainingSteps % 32 == 0:
+                numberOfTrainingSteps = numberOfTrainingSteps / 32 * epochs * 100
+            else:
+                numberOfTrainingSteps = (numberOfTrainingSteps // 32 + 1) * epochs * 100
+
             scheduler = get_linear_schedule_with_warmup(
-                optimizer1, num_warmup_steps=0,
+                optimizer, num_warmup_steps=0,
                 num_training_steps=numberOfTrainingSteps
             )
-            if model[5] in domainsOptimizer1:
-                optimizer1 = torch.optim.AdamW(NNmodel.parameters(), lr=1e-4)
-                numberOfTrainingSteps = len(model[0])
-                if numberOfTrainingSteps % 32 == 0:
-                    numberOfTrainingSteps = numberOfTrainingSteps / 32 * epochs * 100
-                else:
-                    numberOfTrainingSteps = (numberOfTrainingSteps // 32 + 1) * epochs * 100
-                scheduler = get_linear_schedule_with_warmup(
-                    optimizer1, num_warmup_steps=0,
-                    num_training_steps=numberOfTrainingSteps
-                )
-            else:
-                optimizer1 = torch.optim.AdamW(NNmodel.parameters(), lr=1e-4, weight_decay=5e-4)
-                scheduler = "none"
-            optimizer2 = optimizer1
 
             models.add(
-                tuple([iter(model[0]), model[3], optimizer1, model[5],
-                       model[6], model[2], 0, model[0], early_stopping,
-                       optimizer2, model[1], scheduler]))
+                tuple([iter(model[0]), model[3], optimizer, model[4],
+                       model[5], model[2], 0, model[0], early_stopping,
+                       model[1], scheduler]))
 
     print('start finetuning')
     while models:
@@ -459,8 +449,8 @@ if __name__ == "__main__":
                 if batch != "None":
                     loss = train(batch, model[1], oneHotEncoderM, model[2], domainLabels, domainLabelIndices, device)
                     losses[model[4]] += loss
-                    if model[11] != "none":
-                        model[11].step()
+                    if model[10] != "none":
+                        model[10].step()
                 else:
                     removeModels.append(model)
             except:
@@ -471,7 +461,7 @@ if __name__ == "__main__":
                 if model not in removeEntirely:
                     model[1].eval()
                     it = model[6] + 1
-                    validation_loss, microF1Test, macroF1Test = eval_loop(model[10], model[1], oneHotEncoderM,
+                    validation_loss, microF1Test, macroF1Test = eval_loop(model[9], model[1], oneHotEncoderM,
                                                                           domainLabels,
                                                                           domainLabelIndices, device)
                     model[8](validation_loss, microF1Test, macroF1Test, model[1])
@@ -479,7 +469,7 @@ if __name__ == "__main__":
                         models.add(tuple(
                             [iter(model[7]), model[1], model[2], model[3], model[4], model[5], it, model[7],
                              model[8],
-                             model[9], model[10],model[11]]))
+                             model[9], model[10]]))
                     else:
                         print("Early stopping")
                     losses[model[4]] = 0
@@ -487,7 +477,7 @@ if __name__ == "__main__":
     microF1All = 0
     macroF1All = 0
     for model in domainModels:
-        NNmodel = model[3].loading_NeuralNetwork(sys.args[1]).to(device)
+        NNmodel = model[3].loading_NeuralNetwork(sys.argv[1]).to(device)
         print("Results model na epochs " + model[5])
         calculatePrecisionDev(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
         validation_loss, microF1, macroF1 = eval_loop(model[2], NNmodel, oneHotEncoderM, domainLabels,
@@ -495,10 +485,7 @@ if __name__ == "__main__":
         print('Loss - ' + str(validation_loss))
         microF1All += microF1
         macroF1All += macroF1
-        # precision = getPredictions(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
-        # precisionModels.update(precision)
     print('Average micro ')
     print(str(microF1All / 26))
     print('Average macro')
     print(str(macroF1All / 26))
-    #writePredictions(precisionModels, "test/test.tsv", "test.predict")

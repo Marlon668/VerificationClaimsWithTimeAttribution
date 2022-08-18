@@ -23,6 +23,10 @@ from sklearn.metrics import f1_score
 
 from transformers import AutoTokenizer, get_linear_schedule_with_warmup
 
+'''
+Class representing the base model without time addings with a BiLSTM as encoder for claims and evidences
+For learning a model, just give the path to save a model to.
+'''
 
 class verifactionModel(nn.Module):
     # Create neural network
@@ -377,7 +381,7 @@ if __name__ == "__main__":
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(os.pardir + '/labels/labels.tsv',
                                                                                            os.pardir + '/labels/labelSequence',
                                                                                            os.pardir + '/labels/weights.tsv')
-    oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
+    oneHotEncoderM = oneHotEncoder(os.pardir+'/Metadata_sequence/metadata')
     domains = domainIndices.keys()
     metadataSet = set()
     labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
@@ -389,9 +393,15 @@ if __name__ == "__main__":
     instanceEncoderM = instanceEncoder().to(device)
     evidenceRankerM = evidenceRanker(772, 100).to(device)
     for domain in domains:
+        '''
+        load pre-constructed dataset where the textinput for claim and evidences is title + text
+        '''
         #train_set = dump_load(os.pardir + "/train/basisModel/trainDataset-" + domain)
         #dev_set = dump_load(os.pardir + "/dev/basisModel/devDataset-" + domain)
         #test_set = dump_load(os.pardir + "/test/basisModel/testDataset-" + domain)
+        '''
+        construct dataset where the input for claim and evidences is only text of claim
+        '''
         train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain)
         dev_set = NUS(mode='Dev', path=os.pardir + '/dev/dev-' + domain + '.tsv', domain=domain)
         test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv', domain=domain)

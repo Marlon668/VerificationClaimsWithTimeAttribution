@@ -10,7 +10,7 @@ class oneHotEncoder:
     def __init__(self,path):
         self.elementToIndex = dict()
         index = 0
-        with open(os.pardir+'/'+path, 'r', encoding='utf-8') as file:
+        with open(path, 'r', encoding='utf-8') as file:
             for element in file:
                 #remove /n at end of element
                 self.elementToIndex[element[:-1]] = index
