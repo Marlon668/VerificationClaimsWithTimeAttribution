@@ -8,33 +8,23 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from scipy import stats
-import encoderClaimAbsoluteTimeAdding25
-import encoderMetadata
-import evidence_ranker
-import instanceEncoder
-import labelMaskDomain
-import verificationModel90A
-import verificationModel90B
-import verificationModel90C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
-    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
+from uitbreiding2VerschilTijdTekst.encoderGlobal import encoder as encoderTekst
+from uitbreiding2VerschilTijdTekst.verificationModelGlobal import verifactionModel as verificationTekst
+from uitbreiding2VerschilTijdTekst import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+    instanceEncoder, evidence_ranker, labelMaskDomain
+from datasetIteratie2Combiner import NUS
 import torch
 from torch.utils.data import DataLoader
-from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
-from labelEmbeddingLayer import labelEmbeddingLayer
 
 
+'''
+    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding2VerschilTijdTekst according to experiment 3
+'''
 def spearmanRanking(loaders,models):
-    labelsAbsoluteBins = [{},{},{}]
-    labelsAbsoluteBinsDomain = [{},{},{}]
-    labelsAbsoluteBinsIndices = [{}, {}, {}]
-    labelsAbsoluteBinsDomainIndices = [{}, {}, {}]
+    labelstimeTextBins = [{},{},{}]
+    labelstimeTextBinsDomain = [{},{},{}]
+    labelstimeTextBinsIndices = [{}, {}, {}]
+    labelstimeTextBinsDomainIndices = [{}, {}, {}]
     for loader in loaders:
         for data in loader[0]:
             for i in range(len(data[0])):
@@ -42,33 +32,33 @@ def spearmanRanking(loaders,models):
                     model = models[j]
                     metaDataClaim = model.metaDataEncoder.oneHotEncoder.encode(data[3][i], device)
                     metadata_encoding = model.metaDataEncoder(metaDataClaim.unsqueeze(0)).to(device)
-                    labelsDomainAbsolute,labelsAllAbsolute,labelsDomainIndices,labelsAllIndices = model.getRankingLabelsPerBin(data[0][i],data[1][i], data[2][i],
+                    labelsDomaintimeText,labelsAlltimeText,labelsDomainIndices,labelsAllIndices = model.getRankingLabelsPerBin(data[0][i],data[1][i], data[2][i],
                                                                                                      metadata_encoding, domain,
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
                           data[14][i], data[15][i], data[16][i])
-                    for k, v in labelsAllAbsolute.items():
-                        if k in labelsAbsoluteBins[j].keys():
-                            labelsAbsoluteBins[j][k] += v
+                    for k, v in labelsAlltimeText.items():
+                        if k in labelstimeTextBins[j].keys():
+                            labelstimeTextBins[j][k] += v
                         else:
-                            labelsAbsoluteBins[j][k] = v
+                            labelstimeTextBins[j][k] = v
                     for k, v in labelsAllIndices.items():
-                        if k in labelsAbsoluteBinsIndices[j].keys():
-                            labelsAbsoluteBinsIndices[j][k] += v
+                        if k in labelstimeTextBinsIndices[j].keys():
+                            labelstimeTextBinsIndices[j][k] += v
                         else:
-                            labelsAbsoluteBinsIndices[j][k] = v
-                    for k, v in labelsDomainAbsolute.items():
-                        if k in labelsAbsoluteBinsDomain[j].keys():
-                            labelsAbsoluteBinsDomain[j][k] += v
+                            labelstimeTextBinsIndices[j][k] = v
+                    for k, v in labelsDomaintimeText.items():
+                        if k in labelstimeTextBinsDomain[j].keys():
+                            labelstimeTextBinsDomain[j][k] += v
                         else:
-                            labelsAbsoluteBinsDomain[j][k] = v
+                            labelstimeTextBinsDomain[j][k] = v
                     for k, v in labelsDomainIndices.items():
-                        if k in labelsAbsoluteBinsDomainIndices[j].keys():
-                            labelsAbsoluteBinsDomainIndices[j][k] += v
+                        if k in labelstimeTextBinsDomainIndices[j].keys():
+                            labelstimeTextBinsDomainIndices[j][k] += v
                         else:
-                            labelsAbsoluteBinsDomainIndices[j][k] = v
-    return labelsAbsoluteBins,labelsAbsoluteBinsDomain,labelsAbsoluteBinsIndices,labelsAbsoluteBinsDomainIndices
+                            labelstimeTextBinsDomainIndices[j][k] = v
+    return labelstimeTextBins,labelstimeTextBinsDomain,labelstimeTextBinsIndices,labelstimeTextBinsDomainIndices
 
 def calculateMeanAndStdAll(spearmanLabelsAll):
     means = [{},{},{}]
@@ -104,7 +94,7 @@ def calculateMeanAndStdDomain(spearmanLabelsAll,domains):
             stdsTogether[domain][time] = (np.mean([stds[0][domain][time],stds[1][domain][time],stds[2][domain][time]]),np.std([stds[0][domain][time],stds[1][domain][time],stds[2][domain][time]]))
     return meansTogether,stdsTogether
 
-def getIntraRankingLabelsAllAbsolute(labelsAll):
+def getIntraRankingLabelsAlltimeText(labelsAll):
     spearmanLabelsAll = [{},{},{}]
     for model in range(0,len(spearmanLabelsAll)):
         for time in labelsAll[model]:
@@ -124,7 +114,7 @@ def getIntraRankingLabelsAllAbsolute(labelsAll):
                                 spearmanLabelsAll[model][time] = [correlation[i][j]]
     return spearmanLabelsAll
 
-def getInterRankingLabelsDomainAbsolute(labelsDomain,domains,indicesLabelsDomain):
+def getInterRankingLabelsDomaintimeText(labelsDomain,domains,indicesLabelsDomain):
     spearmanLabelsDomainAll = [{},{},{}]
     spearmanLabelsDomain = [{},{},{}]
     for domain in domains:
@@ -165,7 +155,7 @@ def getInterRankingLabelsDomainAbsolute(labelsDomain,domains,indicesLabelsDomain
                                             correlation[i][j]]
     return spearmanLabelsDomainAll,spearmanLabelsDomain
 
-def getIntraRankingLabelsDomainAbsolute(labelsDomain,domains):
+def getIntraRankingLabelsDomaintimeText(labelsDomain,domains):
     spearmanLabelsDomainAll = [{},{},{}]
     spearmanLabelsDomain = [{},{},{}]
     for domain in domains:
@@ -200,7 +190,7 @@ def getIntraRankingLabelsDomainAbsolute(labelsDomain,domains):
                                         correlation[i][j]]
     return spearmanLabelsDomainAll,spearmanLabelsDomain
 
-def getInterRankingLabelsAllAbsolute(labelsAll,indicesLabelsAll):
+def getInterRankingLabelsAlltimeText(labelsAll,indicesLabelsAll):
     spearmanLabelsAll = [{},{},{}]
     times = list(labelsAll[0])
     for model in range(0,len(spearmanLabelsAll)):
@@ -225,7 +215,7 @@ def getInterRankingLabelsAllAbsolute(labelsAll,indicesLabelsAll):
                                     spearmanLabelsAll[model][(time1, time2)] = [correlation[i][j]]
     return spearmanLabelsAll
 
-def calculateMeanAndStdAllAbsolute(spearmanLabelsAll):
+def calculateMeanAndStdAlltimeText(spearmanLabelsAll):
     means = [{},{},{}]
     stds = [{},{},{}]
     for model in range(0,len(means)):
@@ -239,7 +229,7 @@ def calculateMeanAndStdAllAbsolute(spearmanLabelsAll):
         stdsTogether[time] = (np.mean([stds[0][time],stds[1][time],stds[2][time]]),np.std([stds[0][time],stds[1][time],stds[2][time]]))
     return meansTogether,stdsTogether
 
-def calculateMeanAndStdDomainAbsolute(spearmanLabelsAll,domains):
+def calculateMeanAndStdDomaintimeText(spearmanLabelsAll,domains):
     means = [{},{},{}]
     stds = [{},{},{}]
     for domain in domains:
@@ -298,110 +288,116 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     #print(domainWeights)
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
-numpy.seterr(divide='ignore', invalid='ignore')
-domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('timeModels/labels/labels.tsv','timeModels/labels/labelSequence','timeModels/labels/weights.tsv')
+
+'''
+argument 1 path of first model uitbreiding2VerschilTijdTekst
+argument 2 path of second model uitbreiding2VerschilTijdTekst
+argument 3 path of third model uitbreiding2VerschilTijdTekst
+alpha=0.25
+'''
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
+    'labels/labels.tsv', 'labels/labelSequence', 'labels/weights.tsv')
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-        #dev_set = NUS(mode="Dev", path='timeModels/dev/dev-' + domain + '.tsv', pathToSave="timeModels/dev/time/dataset2/", domain=domain)
-        #train_set = NUS(mode='Train', path='timeModels/train/train-' + domain + '.tsv', pathToSave="timeModels/train/time/dataset2/",
-        #                domain=domain)
-        test_set = NUS(mode='Test', path='timeModels/test/test-' + domain + '.tsv', pathToSave="timeModels/test/time/dataset2/",
-                       domain=domain)
-        test_loader = DataLoader(test_set,
-                                 batch_size=1,
-                                 shuffle=False)
-        models.append([test_loader,domain])
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
+                   pathToSave="test/time/dataset2/",
+                   domain=domain)
+    test_loader = DataLoader(test_set,
+                            batch_size=1,
+                            shuffle=False)
+    models.append([test_loader,domain])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-labelsDomainAllAbsolute = {}
-labelsAllAllAbsolute = [{},{},{}]
-labelsDomainAllIndicesAbsolute = {}
-labelsAllAllIndicesAbsolute = [{},{},{}]
+labelsDomainAlltimeText = {}
+labelsAllAlltimeText = [{},{},{}]
+labelsDomainAllIndicestimeText = {}
+labelsAllAllIndicestimeText = [{},{},{}]
 
 with torch.no_grad():
     for model in models:
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaimAbsoluteTimeAdding25.encoderAbsolute(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
                                                            len(domainIndices[model[1]])).to(device)
-        verificationModelTimeAdding25A = verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25.verifactionModel(
+        verificationModelTimeAdding25A = verificationTekst(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
             model[1]).to(device)
-        verificationModelTimeAdding25A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaimAbsoluteTimeAdding25.encoderAbsolute(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        verificationModelTimeAdding25A.loading_NeuralNetwork(sys.argv[1])
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
                                                            len(domainIndices[model[1]])).to(device)
-        verificationModelTimeAdding25B = verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25B.verifactionModel(
+        verificationModelTimeAdding25B = verificationTekst(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
             model[1]).to(device)
-        verificationModelTimeAdding25B.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaimAbsoluteTimeAdding25.encoderAbsolute(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        verificationModelTimeAdding25A.loading_NeuralNetwork(sys.argv[2])
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
                                                            len(domainIndices[model[1]])).to(device)
-        verificationModelTimeAdding25C = verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C.verifactionModel(
+        verificationModelTimeAdding25C = verificationTekst(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
             model[1]).to(device)
-        verificationModelTimeAdding25C.loading_NeuralNetwork()
+        verificationModelTimeAdding25C.loading_NeuralNetwork(sys.argv[3])
 
         timeModels = [verificationModelTimeAdding25A,verificationModelTimeAdding25B,verificationModelTimeAdding25C]
-        labelsAbsoluteBins,labelsAbsoluteBinsDomain,labelsAbsoluteBinsIndices,labelsAbsoluteBinsDomainIndices = spearmanRanking([model],timeModels)
-        labelsDomainAllAbsolute[model[1]] = labelsAbsoluteBinsDomain
-        labelsDomainAllIndicesAbsolute[model[1]] = labelsAbsoluteBinsDomainIndices
+        labelstimeTextBins,labelstimeTextBinsDomain,labelstimeTextBinsIndices,labelstimeTextBinsDomainIndices = spearmanRanking([model],timeModels)
+        labelsDomainAlltimeText[model[1]] = labelstimeTextBinsDomain
+        labelsDomainAllIndicestimeText[model[1]] = labelstimeTextBinsDomainIndices
         for j in range(0,3):
-            for k, v in labelsAbsoluteBins[j].items():
-                if k in labelsAllAllAbsolute[j].keys():
-                    labelsAllAllAbsolute[j][k] += v
+            for k, v in labelstimeTextBins[j].items():
+                if k in labelsAllAlltimeText[j].keys():
+                    labelsAllAlltimeText[j][k] += v
                 else:
-                    labelsAllAllAbsolute[j][k] = v
+                    labelsAllAlltimeText[j][k] = v
         for j in range(0,3):
-            for k, v in labelsAbsoluteBinsIndices[j].items():
-                if k in labelsAllAllIndicesAbsolute[j].keys():
-                    labelsAllAllIndicesAbsolute[j][k] += v
+            for k, v in labelstimeTextBinsIndices[j].items():
+                if k in labelsAllAllIndicestimeText[j].keys():
+                    labelsAllAllIndicestimeText[j][k] += v
                 else:
-                    labelsAllAllIndicesAbsolute[j][k] = v
+                    labelsAllAllIndicestimeText[j][k] = v
 
-    file = open("labelsDomainAllAbsolute", "wb")
-    pickle.dump(labelsDomainAllAbsolute, file)
+    file = open("labelsDomainAlltimeText", "wb")
+    pickle.dump(labelsDomainAlltimeText, file)
     file.close()
-    file=open("labelsAllAllAbsolute", "wb")
-    pickle.dump(labelsAllAllAbsolute, file)
+    file=open("labelsAllAlltimeText", "wb")
+    pickle.dump(labelsAllAlltimeText, file)
     file.close()
-    file = open("labelsDomainAllIndicesAbsolute", "wb")
-    pickle.dump(labelsDomainAllIndicesAbsolute, file)
+    file = open("labelsDomainAllIndicestimeText", "wb")
+    pickle.dump(labelsDomainAllIndicestimeText, file)
     file.close()
-    file=open("labelsAllAllIndicesAbsolute", "wb")
-    pickle.dump(labelsAllAllIndicesAbsolute, file)
+    file=open("labelsAllAllIndicestimeText", "wb")
+    pickle.dump(labelsAllAllIndicestimeText, file)
     file.close()
     file = open("domains", "wb")
     pickle.dump(list(domains), file)
     file.close()
-    print("Absolute version")
-    SpearmanLabelsAllIntra = getIntraRankingLabelsAllAbsolute(labelsAllAllAbsolute)
+    print("timeText version")
+    SpearmanLabelsAllIntra = getIntraRankingLabelsAlltimeText(labelsAllAlltimeText)
 
-    meansAllIntra,stdAllIntra = calculateMeanAndStdAllAbsolute(SpearmanLabelsAllIntra)
+    meansAllIntra,stdAllIntra = calculateMeanAndStdAlltimeText(SpearmanLabelsAllIntra)
     print("Intra")
     print(meansAllIntra)
     print(stdAllIntra)
@@ -412,8 +408,8 @@ with torch.no_grad():
     pickle.dump(stdAllIntra, file)
     file.close()
     print("Inter")
-    SpearmanLabelsAllInter = getInterRankingLabelsAllAbsolute(labelsAllAllAbsolute,labelsAllAllIndicesAbsolute)
-    meansAllInter, stdAllInter = calculateMeanAndStdAllAbsolute(SpearmanLabelsAllInter)
+    SpearmanLabelsAllInter = getInterRankingLabelsAlltimeText(labelsAllAlltimeText,labelsAllAllIndicestimeText)
+    meansAllInter, stdAllInter = calculateMeanAndStdAlltimeText(SpearmanLabelsAllInter)
     print(meansAllInter)
     print(stdAllInter)
     file = open("Time-Inter-meansA", "wb")
@@ -423,8 +419,8 @@ with torch.no_grad():
     pickle.dump(stdAllInter, file)
     file.close()
     print("Domain intra all")
-    SpearmanLabelsDomainAllIntra,SpearmanLabelsDomainIntra = getIntraRankingLabelsDomainAbsolute(labelsDomainAllAbsolute,domains)
-    meansDomainAll, stdDomainAll = calculateMeanAndStdAllAbsolute(SpearmanLabelsDomainAllIntra)
+    SpearmanLabelsDomainAllIntra,SpearmanLabelsDomainIntra = getIntraRankingLabelsDomaintimeText(labelsDomainAlltimeText,domains)
+    meansDomainAll, stdDomainAll = calculateMeanAndStdAlltimeText(SpearmanLabelsDomainAllIntra)
     print(meansDomainAll)
     print(stdDomainAll)
     file = open("Time-Intra-DomainAll-meansA", "wb")
@@ -434,7 +430,7 @@ with torch.no_grad():
     pickle.dump(stdDomainAll, file)
     file.close()
     print("Domain intra domain")
-    meansDomain, stdDomain = calculateMeanAndStdDomainAbsolute(SpearmanLabelsDomainIntra,domains)
+    meansDomain, stdDomain = calculateMeanAndStdDomaintimeText(SpearmanLabelsDomainIntra,domains)
     print(meansDomain)
     print(stdDomain)
     file = open("Time-Intra-Domain-meansA", "wb")
@@ -444,8 +440,8 @@ with torch.no_grad():
     pickle.dump(stdDomain, file)
     file.close()
     print("Domain inter all")
-    SpearmanLabelsDomainAllInter, SpearmanLabelsDomainInter = getInterRankingLabelsDomainAbsolute(labelsDomainAllAbsolute, domains,labelsDomainAllIndicesAbsolute)
-    meansDomainAllInter, stdDomainAllInter = calculateMeanAndStdAllAbsolute(SpearmanLabelsDomainAllInter)
+    SpearmanLabelsDomainAllInter, SpearmanLabelsDomainInter = getInterRankingLabelsDomaintimeText(labelsDomainAlltimeText, domains,labelsDomainAllIndicestimeText)
+    meansDomainAllInter, stdDomainAllInter = calculateMeanAndStdAlltimeText(SpearmanLabelsDomainAllInter)
     print(meansDomainAllInter)
     print(stdDomainAllInter)
     file = open("Time-Inter-DomainAll-meansA", "wb")
@@ -455,7 +451,7 @@ with torch.no_grad():
     pickle.dump(stdDomainAllInter, file)
     file.close()
     print("Domain inter domain")
-    meansDomain, stdDomain = calculateMeanAndStdDomainAbsolute(SpearmanLabelsDomainInter, domains)
+    meansDomain, stdDomain = calculateMeanAndStdDomaintimeText(SpearmanLabelsDomainInter, domains)
     print(meansDomain)
     print(stdDomain)
     file = open("Time-Inter-Domain-meansA", "wb")

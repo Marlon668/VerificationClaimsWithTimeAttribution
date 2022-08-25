@@ -6,7 +6,7 @@ from torch import nn
 
 import torch.nn.functional as F
 from transformers import BertTokenizer
-from OneHotEncoderBasis import oneHotEncoder
+from basisModel.OneHotEncoderBasis import oneHotEncoder
 from torch.utils.data import DataLoader
 
 class encoderMetadata(nn.Module):

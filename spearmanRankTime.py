@@ -8,30 +8,17 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from scipy import stats
-import encoderClaim90
-import encoderClaimAbsoluteTimeAdding25
-import encoderClaimAbsoluteTimeEverything2040
-import encoderMetadata
-import evidence_ranker
-import instanceEncoder
-import labelMaskDomain
-import verificationModel90A
-import verificationModel90B
-import verificationModel90C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
-    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
+from uitbreiding1VerschilPublicatie.encoderGlobal import encoder as encoderPublicatie
+from uitbreiding1VerschilPublicatie.verificationModelGlobal import verifactionModel as verificationPublicatie
+from uitbreiding1VerschilPublicatie import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+    instanceEncoder, evidence_ranker, labelMaskDomain
+from datasetIteratie2Combiner import NUS
 import torch
 from torch.utils.data import DataLoader
-from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
-from labelEmbeddingLayer import labelEmbeddingLayer
 
-
+'''
+    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding1VerschilPublicatie according to experiment 3
+'''
 def spearmanRanking(loaders,models):
     labelsBins = [{},{},{}]
     labelsBinsDomain = [{},{},{}]
@@ -232,66 +219,72 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     #print(domainWeights)
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
-numpy.seterr(divide='ignore', invalid='ignore')
-domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('timeModels/labels/labels.tsv','timeModels/labels/labelSequence','timeModels/labels/weights.tsv')
+'''
+argument 1 path of model
+argument 2 name of domain to take examples from to calculate attribution
+alpha=0.9
+'''
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
+    'labels/labels.tsv', 'labels/labelSequence', 'labels/weights.tsv')
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-        #dev_set = NUS(mode="Dev", path='timeModels/dev/dev-' + domain + '.tsv', pathToSave="timeModels/dev/time/dataset2/", domain=domain)
-        #train_set = NUS(mode='Train', path='timeModels/train/train-' + domain + '.tsv', pathToSave="timeModels/train/time/dataset2/",
-        #                domain=domain)
-        test_set = NUS(mode='Test', path='timeModels/test/test-' + domain + '.tsv', pathToSave="timeModels/test/time/dataset2/",
-                       domain=domain)
-        test_loader = DataLoader(test_set,
-                                 batch_size=1,
-                                 shuffle=False)
-        models.append([test_loader,domain])
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
+                   pathToSave="test/time/dataset2/",
+                   domain=domain)
+    test_loader = DataLoader(test_set,
+                            batch_size=1,
+                            shuffle=False)
+    models.append([test_loader,domain])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labelsDomainAll = {}
 labelsAllAll = [{},{},{}]
 
 with torch.no_grad():
     for model in models:
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaim90.encoderClaim(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
-        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
-        verificationModelTime90A = verificationModel90A.verifactionModel(encoderM, encoderMetadataM, instanceEncoderM,
-                                              evidenceRankerM,
-                                              labelEmbeddingLayerM, labelMaskDomainM, domainIndices, domainWeights,
-                                              model[1]).to(device)
-        verificationModelTime90A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaim90.encoderClaim(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
+                                                           len(domainIndices[model[1]])).to(device)
+        verificationModelTime90A = verificationPublicatie(encoderM, encoderMetadataM, instanceEncoderM,
+                                                          evidenceRankerM,
+                                                          labelEmbeddingLayerM, labelMaskDomainM,
+                                                          domainIndices, domainWeights,
+                                                          model[1]).to(device)
+        verificationModelTime90A.loading_NeuralNetwork(sys.argv[1])
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
-        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1], len(domainIndices[model[1]])).to(
-            device)
-        verificationModelTime90B = verificationModel90B.verifactionModel(encoderM, encoderMetadataM, instanceEncoderM,
-                                                                         evidenceRankerM,
-                                                                         labelEmbeddingLayerM, labelMaskDomainM,
-                                                                         domainIndices, domainWeights,
-                                                                         model[1]).to(device)
-        verificationModelTime90B.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderClaim90.encoderClaim(300, 128).to(device)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
+                                                           len(domainIndices[model[1]])).to(device)
+        verificationModelTime90B = verificationPublicatie(encoderM, encoderMetadataM, instanceEncoderM,
+                                                          evidenceRankerM,
+                                                          labelEmbeddingLayerM, labelMaskDomainM,
+                                                          domainIndices, domainWeights,
+                                                          model[1]).to(device)
+        verificationModelTime90B.loading_NeuralNetwork(sys.argv[1])
+        oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
+        labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
+        encoderM = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
-        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1], len(domainIndices[model[1]])).to(
-            device)
-        verificationModelTime90C = verificationModel90C.verifactionModel(encoderM, encoderMetadataM, instanceEncoderM,
-                                                                         evidenceRankerM,
-                                                                         labelEmbeddingLayerM, labelMaskDomainM,
-                                                                         domainIndices, domainWeights,
-                                                                         model[1]).to(device)
-        verificationModelTime90C.loading_NeuralNetwork()
+        labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, model[1],
+                                                           len(domainIndices[model[1]])).to(device)
+        verificationModelTime90C = verificationPublicatie(encoderM, encoderMetadataM, instanceEncoderM,
+                                                          evidenceRankerM,
+                                                          labelEmbeddingLayerM, labelMaskDomainM,
+                                                          domainIndices, domainWeights,
+                                                          model[1]).to(device)
+        verificationModelTime90C.loading_NeuralNetwork(sys.argv[1])
 
         timeModels = [verificationModelTime90A,verificationModelTime90B,verificationModelTime90A]
         labelsDomain,labelsAll = spearmanRanking([model],timeModels)

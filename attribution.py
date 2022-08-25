@@ -12,30 +12,16 @@ import numpy as np
 import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
-
-import encoderClaim90
-import encoderClaimAbsoluteTimeAdding25
-import encoderClaimAbsoluteTimeEverything2040
-import encoderMetadata
-import evidence_ranker
-import instanceEncoder
-import labelMaskDomain
-import verificationModel90A
-import verificationModel90B
-import verificationModel90C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
-    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
+from datasetIteratie2Combiner import NUS
+from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataBasis, \
+    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis
 import torch
 from torch.utils.data import DataLoader
-from datasetIteratie2CombinerOld2 import dump_load, dump_write, NUS
-from labelEmbeddingLayer import labelEmbeddingLayer
 
+'''
+Calculate attribution for text for basismodel
+code based on https://github.com/ankurtaly/Integrated-Gradients
+'''
 def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     domainsIndices = dict()
     domainsLabels = dict()
@@ -72,7 +58,6 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
         domainWeights[parts[0]] = torch.zeros(len(weightsDomainNormal))
         for i in range(len(weightsDomainNormal)):
             domainWeights[parts[0]][domainLabelIndices[parts[0]][i]] = float(weightsDomainNormal[i])
-    #print(domainWeights)
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
 def calculate_outputs_and_gradients(data, model):
@@ -145,67 +130,10 @@ def calculate_outputs_and_gradientsIntegrated(inputs,metadata_encoding, model,ta
     gradientsEncoding = np.array(gradientsEncoding)
     return gradientsEncoding
 
-def visualise(attributions,tekst):
-    #divide attributions into 32 equal groups and take mean of each group to form the reduced attributions
-
-    reducedAttributions = []
-    for attribution in attributions:
-        reducedAttribution = []
-        groups = [attribution[x:x+8] for x in range(0, len(attribution), 8)]
-        for group in groups:
-            reducedAttribution.append(np.mean(group))
-        reducedAttributions.append(reducedAttribution)
-    #print(reducedAttributions)
-    #reducedAttributions = np.array(reducedAttributions).T
-    #print(reducedAttributions)
-    #reducedAttributions = np.array(reducedAttributions)
-    fig = plt.figure()
-    ax = plt.axes()
-    #ax.set_xticks(np.arange(len(attributions[0])))
-    ax.set_yticks(np.arange(len(attributions)))
-    labels = ["Claim"]
-    for i in range(1,len(attributions)):
-        labels.append("Ev" + str(i))
-    ax.set_yticklabels(labels)
-    ax.set_title(tekst)
-    ax.set_ylabel("Encodings")
-    ax.set_xlabel("Features gegroepeerd in groepen van 8")
-     #cmap.set_bad(color='black')
-    '''
-    ax = plt.axes()
-    print(reducedAttributions.min())
-    print(reducedAttributions.max())
-    im = ax.imshow(reducedAttributions,norm=matplotlib.colors.LogNorm(vmin=reducedAttributions.min(),vmax = reducedAttributions.max()))
-    # this command ensures that the colorbar next to the heatmap is of equal size than the heatmap
-    # This command is taken from Stackoverflow "Set Matplotlib colorbar size to match graph", the third answer:
-    # https: // stackoverflow.com / questions / 18195758 / set - matplotlib - colorbar - size - to - match - graph
-    cax = fig.add_axes([ax.get_position().x1 + 0.01, ax.get_position().y0, 0.02, ax.get_position().height])
-    plt.colorbar(im, cax=cax, label="Accuracy")
-    print(reducedAttributions)
-    
-    for i in range(len(attributions)):
-        for j in range(len(attributions[i])):
-            ax.text(j, i, attributions[i][j],
-                    ha="center", va="center", color="w", size=8)
-    '''
-    #cax = fig.add_axes([ax.get_position().x1 + 0.01, ax.get_position().y0, 0.02, ax.get_position().height])
-    #pcm = plt.pcolor(reducedAttributions)
-    #plt.colorbar(pcm,orientation="horizontal",vmin=reducedAttributions.min(),vmax = reducedAttributions.max())
-    im = ax.imshow(reducedAttributions,norm=matplotlib.colors.LogNorm())
-    plt.colorbar(im,orientation="horizontal")
-    plt.show()
 # integrated gradients
 def integrated_gradients(inputs,metadata_encoding, model, target_label_idx, predict_and_gradients, baseline, steps=50, cuda=False):
-    # scale inputs and compute gradients
-    #baseLine = model.getBaseLine(baseline)
-
-    '''
-    baselineClaim,baselineEvidence = model.getBaseLine(baseline,baseline,metadata_encoding.squeeze(0))
-    torch.save(baselineClaim, 'baselineClaimV.pt')
-    torch.save(baselineEvidence, 'baselineEvidenceV.pt')
-    '''
-    baselineClaim = torch.load('baselineClaim.pt')
-    baselineEvidence = torch.load('baselineEvidence.pt')
+    baselineClaim = torch.zeros([256])
+    baselineEvidence = torch.zeros([256])
     baselineClaim, baselineEvidence = model.getBaseLine(baselineClaim, baselineEvidence, metadata_encoding.squeeze(0))
     scaled_inputs = []
     print(inputs)
@@ -215,12 +143,9 @@ def integrated_gradients(inputs,metadata_encoding, model, target_label_idx, pred
         evidences = []
         for j in range(len(inputs[1])):
             evidences.append(baselineEvidence + (float(i) / steps) * (inputs[1][j]-baselineEvidence))
-            #evidences.append((baseline,baseline))
-            #print((baseline + (float(i) / steps) * inputs[3][i][1],baseline + (float(i) / steps) * inputs[3][i][2])))
         entry.append(evidences)
         scaled_inputs.append(entry)
 
-    #scaled_inputs = [baseline + (float(i) / steps) * (inputs - baseline) for i in range(0, steps + 1)]
     gradientsEncoding = predict_and_gradients(scaled_inputs,metadata_encoding, model, target_label_idx)
 
     sumGradsEncoding = [np.zeros(len(inputs[1])+1)]
@@ -242,19 +167,20 @@ def random_baseline_integrated_gradients(inputs,metadata_encoding, model, target
     return integrated_gradEncoding
 
 if __name__ == '__main__':
-    oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+    '''
+    argument 1 path of model
+    argument 2 name of domain to take examples from to calculate attributin
+    '''
+    oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('Metadata_sequence/metadata')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
-        'timeModels/labels/labels.tsv', 'timeModels/labels/labelSequence', 'timeModels/labels/weights.tsv')
-    domains = {"abbc"}
+        'labels/labels.tsv', 'labels/labelSequence', 'labels/weights.tsv')
+    domains = {sys.argv[2]}
     datas= []
     for domain in domains:
-        test_set = NUS(mode="Test", path='timeModels/test/test-' + domain + '.tsv', pathToSave="timeModels/test/time/dataset2/", domain=domain)
-        # train_set = NUS(mode='Train', path='timeModels/train/train-' + domain + '.tsv', pathToSave="timeModels/train/time/dataset2/",
-        #                domain=domain)
-        #test_set = NUS(mode='Test', path='timeModels/test/test-' + domain + '.tsv',
-        #               pathToSave="timeModels/test/time/dataset2/",
-        #               domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
+                       pathToSave="test/time/dataset2/",
+                       domain=domain)
         dev_loader = DataLoader(test_set,
                                  batch_size=1,
                                  shuffle=False)
@@ -262,10 +188,9 @@ if __name__ == '__main__':
 
 
     for data in datas:
-        oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderBasis = encoderBasis.encoderClaim(300, 128).to(device)
-        encoderMetadataBasis = encoderMetadataB.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
+        encoderBasis = encoderBasis.encoder(300, 128).to(device)
+        encoderMetadataBasis = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderBasis = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, data[1],
@@ -274,37 +199,18 @@ if __name__ == '__main__':
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices,
                                                              domainWeights, data[1]).to(device)
-        basisModel.loading_NeuralNetwork()
+        basisModel.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)
-            '''
-            inputs = torch.tensor([])
-            inputs = torch.concat((inputs,verificationModelTime90A.getClaimEncoding(entry[1][0])))
-            inputs = torch.concat((inputs,verificationModelTime90A.getSnippetEncodings(entry[2][0])))
-            metaDataClaim = oneHotEncoderBasis.encode(data[3][0], device)
-            metadata_encoding = verificationModelTime90A.metaDataEncoder(metaDataClaim.unsqueeze(0)).to(device)
-            '''
             gradientsEncoding, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, basisModel)
             with torch.no_grad():
                 inputs, metadata_encoding = getInputs(entry, basisModel)
                 label_index = domainLabelIndices[data[1]][domainLabels[data[1]].index(entry[4][0])]
             if predictedLabel != label_index:
-                #gradientsEncoding = np.transpose(gradientsEncoding[0], (1, 2, 0))
-                #gradientsTime = np.transpose(gradientsTime[0], (1, 2, 0))
-                #print(gradientsEncoding)
-                #print(gradientsTime)
                 attributionsEncoding = random_baseline_integrated_gradients(inputs,metadata_encoding, basisModel, label_index,
                                                                     calculate_outputs_and_gradientsIntegrated, \
                                                                     steps=1000, num_random_trials=1)
-                '''
-                print("Encoding")
-                print(attributionsEncoding)
-                print("Time")
-                print(attributionsTime)
-                print("reduced encoding")
-                '''
-                #visualise(attributionsEncoding,"Attribution Encodering")
-                #visualise(attributionsTime,"Attribution Time")
+
                 print("Summation of the attributions encoding")
                 print(numpy.sum(attributionsEncoding,axis=1))
                 print("Summation of the absolute attributions encoding")

@@ -10,32 +10,18 @@ import torch.nn.functional as F
 from scipy import stats
 from transformers import AutoModel
 
-import encoderClaim90
-import encoderClaimAbsoluteTimeAdding25
-import encoderClaimAbsoluteTimeEverything2040
-import encoderMetadata
-import evidence_ranker
-import instanceEncoder
-import labelMaskDomain
-import verificationModel90A
-import verificationModel90B
-import verificationModel90C
-import verificationModelBERT75A
-import verificationModelBERT75B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamAdding25C
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040A
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040B
-import verificationModelFineTuningAbsoluteTimeConstantLRAdamEverything2040C
-from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataB, \
-    instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelC, verificationModelD
+from uitbreiding1VerschilPublicatie.verificationModelBERTGlobal import verifactionModel as verificationPublicatie
+from datasetIteratie2Combiner import NUS
+from uitbreiding1VerschilPublicatie import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+    instanceEncoder, evidence_ranker, labelMaskDomain
 import torch
 from torch.utils.data import DataLoader
-from datasetIteratie2CombinerOld import dump_load, dump_write, NUS
-from labelEmbeddingLayer import labelEmbeddingLayer
 
 
+'''
+    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding1VerschilPublicatie according to experiment 3
+    For DistilRoBERTa as encocer
+'''
 def spearmanRanking(loaders,models):
     labelsBins = [{},{}]
     labelsBinsDomain = [{},{}]
@@ -229,23 +215,26 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
         domainWeights[parts[0]] = torch.zeros(len(weightsDomainNormal))
         for i in range(len(weightsDomainNormal)):
             domainWeights[parts[0]][domainLabelIndices[parts[0]][i]] = float(weightsDomainNormal[i])
-    #print(domainWeights)
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
-numpy.seterr(divide='ignore', invalid='ignore')
-domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('timeModels/labels/labels.tsv','timeModels/labels/labelSequence','timeModels/labels/weights.tsv')
+'''
+argument 1 path of first model uitbreiding1VerschilPublicatie
+argument 2 path of second model uitbreiding1VerschilPublicatie
+alpha=0.75
+'''
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
+    'labels/labels.tsv', 'labels/labelSequence', 'labels/weights.tsv')
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-        #dev_set = NUS(mode="Dev", path='timeModels/dev/dev-' + domain + '.tsv', pathToSave="timeModels/dev/time/dataset2/", domain=domain)
-        #train_set = NUS(mode='Train', path='timeModels/train/train-' + domain + '.tsv', pathToSave="timeModels/train/time/dataset2/",
-        #                domain=domain)
-        test_set = NUS(mode='Test', path='timeModels/test/test-' + domain + '.tsv', pathToSave="timeModels/test/time/dataset2/",
-                       domain=domain)
-        test_loader = DataLoader(test_set,
-                                 batch_size=1,
-                                 shuffle=False)
-        models.append([test_loader,domain])
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
+                   pathToSave="test/time/dataset2/",
+                   domain=domain)
+    test_loader = DataLoader(test_set,
+                            batch_size=1,
+                            shuffle=False)
+    models.append([test_loader,domain])
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 labelsDomainAll = {}
 labelsAllAll = [{},{},{}]
@@ -254,37 +243,34 @@ with torch.no_grad():
     for model in models:
         domain = model[1]
         print("Start loading model " + domain)
-        oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
-        instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
-        evidenceRankerM = evidence_ranker.evidenceRanker(2308, 100).to(device)
-        labelMaskDomainM = labelMaskDomain.labelMaskDomain(2308, domainIndices, model[1],
-                                                           len(domainIndices[model[1]])).to(device)
+        oneHotEncoderM = OneHotEncoder.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        labelEmbeddingLayerTime = labelEmbeddingLayer.labelEmbeddingLayer(2308, domainIndices)
+        encoderMetadataTime = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        instanceEncoderTime = instanceEncoder.instanceEncoder().to(device)
+        evidenceRankerTime = evidence_ranker.evidenceRanker(2308, 100).to(device)
+        labelMaskDomainTime = labelMaskDomain.labelMaskDomain(2308, domainIndices, model[1],
+                                                                   len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTime75A = verificationModelBERT75A.verifactionModel(transformer, encoderMetadataM,
-                                                                             instanceEncoderM,
-                                                                             evidenceRankerM,
-                                                                             labelEmbeddingLayerM, labelMaskDomainM,
-                                                                             domainIndices, domainWeights, domain).to(
-            device)
-        verificationModelTime75A.loading_NeuralNetwork()
-        oneHotEncoderM = OneHotEncoderBasis.oneHotEncoder('timeModels/Metadata_sequence/metadata')
-        labelEmbeddingLayerM = labelEmbeddingLayer(2308, domainIndices)
-        encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
-        instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
-        evidenceRankerM = evidence_ranker.evidenceRanker(2308, 100).to(device)
-        labelMaskDomainM = labelMaskDomain.labelMaskDomain(2308, domainIndices, model[1],
-                                                           len(domainIndices[model[1]])).to(device)
+        verificationModelTime75A = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
+                                                          evidenceRankerTime,
+                                                          labelEmbeddingLayerTime, labelMaskDomainTime,
+                                                          domainIndices, domainWeights,
+                                                          domain, 0.75)
+        verificationModelTime75A.loading_NeuralNetwork(sys.argv[1]).to(device)
+        oneHotEncoderM = OneHotEncoder.oneHotEncoder('timeModels/Metadata_sequence/metadata')
+        labelEmbeddingLayerTime = labelEmbeddingLayer.labelEmbeddingLayer(2308, domainIndices)
+        encoderMetadataTime = encoderMetadata.encoderMetadata(3, 3, oneHotEncoderM).to(device)
+        instanceEncoderTime = instanceEncoder.instanceEncoder().to(device)
+        evidenceRankerTime = evidence_ranker.evidenceRanker(2308, 100).to(device)
+        labelMaskDomainTime = labelMaskDomain.labelMaskDomain(2308, domainIndices, model[1],
+                                                              len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTime75B = verificationModelBERT75B.verifactionModel(transformer, encoderMetadataM,
-                                                                             instanceEncoderM,
-                                                                             evidenceRankerM,
-                                                                             labelEmbeddingLayerM, labelMaskDomainM,
-                                                                             domainIndices, domainWeights, domain).to(
-            device)
-        verificationModelTime75B.loading_NeuralNetwork()
+        verificationModelTime75B = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
+                                                          evidenceRankerTime,
+                                                          labelEmbeddingLayerTime, labelMaskDomainTime,
+                                                          domainIndices, domainWeights,
+                                                          domain, 0.75)
+        verificationModelTime75B.loading_NeuralNetwork(sys.argv[2]).to(device)
         print("Done loading " + domain)
         timeModels = [verificationModelTime75A,verificationModelTime75B]
         labelsDomain,labelsAll = spearmanRanking([model],timeModels)

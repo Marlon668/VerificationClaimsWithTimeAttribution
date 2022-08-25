@@ -153,18 +153,20 @@ class verifactionModel(nn.Module):
         return ranking, labelsAll, labelsDomain, allEqual
 
     '''
-    Function for saving the neural network
+       Function for saving the neural network
     '''
-    def saving_NeuralNetwork(model,path):
-        if not os.path.exists(path):
-            os.mkdir(path)
-        torch.save(model.state_dict(), path + '/model')
+    def saving_NeuralNetwork(model, path):
+        pathI = path + "/" + model.domain
+        if not os.path.exists(pathI):
+            os.mkdir(pathI)
+        torch.save(model.state_dict(), pathI + '/model')
 
     '''
     Function for loading the configurations from a file
     '''
     def loading_NeuralNetwork(model,path):
-        model.load_state_dict(torch.load(path + '/model',map_location=torch.device('cpu')))
+        pathI = path + "/" + model.domain
+        model.load_state_dict(torch.load(pathI + '/model', map_location=torch.device('cpu')))
         model.eval()
         return model
 

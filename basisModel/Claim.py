@@ -3,7 +3,8 @@ import re
 import xml.etree.ElementTree as ET
 import datetime
 import os
-import Snippet
+
+from basisModel import Snippet
 
 
 class claim:

@@ -3,7 +3,7 @@ import os
 
 import spacy
 
-import Claim
+import basisModel.Claim
 
 import torch
 from torch.utils.data import Dataset, DataLoader
