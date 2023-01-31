@@ -25,16 +25,16 @@ import scipy.stats as ss
 import numpy
 import numpy as np
 import torch.nn.functional as F
-from uitbreiding1En2.encoderGlobal import encoder as encoderEverything
-from uitbreiding1En2.verificationModelGlobal import verifactionModel as verificationEverything
-from uitbreiding1En2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+from division1And2.encoderGlobal import encoder as encoderEverything
+from division1And2.verificationModelGlobal import verifactionModel as verificationEverything
+from division1And2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 from datasetIteratie2Combiner import NUS
 import torch
 from torch.utils.data import DataLoader
 
 '''
-Calculate attribution for text and time for uitbreiding1En2
+Calculate attribution for text and time for division1And2
 code based on https://github.com/ankurtaly/Integrated-Gradients
 '''
 def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
@@ -160,7 +160,6 @@ def calculate_outputs_and_gradientsIntegrated(inputs,metadata_encoding, model,ta
         gradientsEncodingEntry = []
         gradientsTimeEntryAbsolute = []
         gradientsTimeEntryVerschil = []
-        #print(input[2])
         input[0].requires_grad = True
         input[0].retain_grad()
         for time in input[1]:

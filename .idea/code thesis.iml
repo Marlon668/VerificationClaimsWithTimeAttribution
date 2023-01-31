@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/processedTimes" />
       <excludeFolder url="file://$MODULE_DIR$/text" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.7 (allennlp_env)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="openjdk-19" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

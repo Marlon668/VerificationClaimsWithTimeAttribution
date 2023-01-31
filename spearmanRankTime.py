@@ -8,16 +8,16 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from scipy import stats
-from uitbreiding1VerschilPublicatie.encoderGlobal import encoder as encoderPublicatie
-from uitbreiding1VerschilPublicatie.verificationModelGlobal import verifactionModel as verificationPublicatie
-from uitbreiding1VerschilPublicatie import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+from division1DifferencePublication.encoderGlobal import encoder as encoderPublicatie
+from division1DifferencePublication.verificationModelGlobal import verifactionModel as verificationPublicatie
+from division1DifferencePublication import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 from datasetIteratie2Combiner import NUS
 import torch
 from torch.utils.data import DataLoader
 
 '''
-    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding1VerschilPublicatie according to experiment 3
+    Calculate intra and inter SpearmanRankingCoefficient for division1DifferencePublication according to experiment 3
 '''
 def spearmanRanking(loaders,models):
     labelsBins = [{},{},{}]
@@ -540,7 +540,7 @@ with torch.no_grad():
         standaardLabelsAllEverything3.extend(standaardLabelAllDomainEverything)
     file = open("resultPearson/biLSTM/versusBase/AllDomains","w")
     
-    print("All domains for basisModel versus time,absolute and everything")
+    print("All domains for baseModel versus time,absolute and everything")
     print("Ranking")
     print("Gemiddelde all : " + str(np.mean(pearsonAll)))
     print("Deviatie all : "  + str(np.std(pearsonAll)))
@@ -588,7 +588,7 @@ with torch.no_grad():
     print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything)))
     print(numberEqual1)
     
-    file.write("All domains for basisModel versus time,absolute and everything"+"\n")
+    file.write("All domains for baseModel versus time,absolute and everything"+"\n")
     file.write("Ranking"+"\n")
     file.write("Gemiddelde all : " + str(np.mean(pearsonAll))+"\n")
     file.write("Deviatie all : " + str(np.std(pearsonAll))+"\n")

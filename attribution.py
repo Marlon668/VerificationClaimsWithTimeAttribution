@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
 from datasetIteratie2Combiner import NUS
-from basisModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBasis, encoderBasis, encoderMetadataBasis, \
+from baseModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBase, encoderBase, encoderMetadataBasis, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis
 import torch
 from torch.utils.data import DataLoader

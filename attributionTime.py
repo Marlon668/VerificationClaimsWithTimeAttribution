@@ -13,16 +13,16 @@ import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
 
-from uitbreiding1VerschilPublicatie.encoderGlobal import encoder as encoderPublicatie
-from uitbreiding1VerschilPublicatie.verificationModelGlobal import verifactionModel as verificationPublicatie
-from uitbreiding1VerschilPublicatie import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+from division1DifferencePublication.encoderGlobal import encoder as encoderPublicatie
+from division1DifferencePublication.verificationModelGlobal import verifactionModel as verificationPublicatie
+from division1DifferencePublication import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 from datasetIteratie2Combiner import NUS
 import torch
 from torch.utils.data import DataLoader
 
 '''
-Calculate attribution for text and time for uitbreiding1VerschilPublicatie
+Calculate attribution for text and time for division1DifferencePublication
 code based on https://github.com/ankurtaly/Integrated-Gradients
 '''
 def getLabelIndicesDomain(domainPath,labelPath,weightsPath):

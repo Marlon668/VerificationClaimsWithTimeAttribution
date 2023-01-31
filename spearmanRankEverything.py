@@ -8,9 +8,9 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from scipy import stats
-from uitbreiding1En2.encoderGlobal import encoder as encoderEverything
-from uitbreiding1En2.verificationModelGlobal import verifactionModel as verificationEverything
-from uitbreiding1En2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+from division1And2.encoderGlobal import encoder as encoderEverything
+from division1And2.verificationModelGlobal import verifactionModel as verificationEverything
+from division1And2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 from datasetIteratie2Combiner import NUS
 import torch
@@ -18,7 +18,7 @@ from torch.utils.data import DataLoader
 
 
 '''
-    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding1En2 according to experiment 3
+    Calculate intra and inter SpearmanRankingCoefficient for division1And2 according to experiment 3
 '''
 def spearmanRanking(loaders,models):
     labelsTimeBins = [{}, {}, {}]
@@ -428,9 +428,9 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
 '''
-argument 1 path of first model uitbreiding1En2
-argument 2 path of second model uitbreiding1En2
-argument 3 path of third model uitbreiding1En2
+argument 1 path of first model division1And2
+argument 2 path of second model division1And2
+argument 3 path of third model division1And2
 alpha=0.2, beta=0.4
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

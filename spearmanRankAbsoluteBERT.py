@@ -8,15 +8,15 @@ import numpy as np
 from scipy import stats
 from transformers import AutoModel
 
-from uitbreiding2VerschilTijdTekst.verificationModelGlobalBERT import verifactionModel as verificationTekst
+from division2DifferenceTimeText.verificationModelGlobalBERT import verifactionModel as verificationTekst
 from datasetIteratie2Combiner import NUS
-from uitbreiding2VerschilTijdTekst import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
+from division2DifferenceTimeText import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 import torch
 from torch.utils.data import DataLoader
 
 '''
-    Calculate intra and inter SpearmanRankingCoefficient for uitbreiding2VerschilTijdTekst according to experiment 3
+    Calculate intra and inter SpearmanRankingCoefficient for division2DifferenceTimeText according to experiment 3
     for DistilRoBERTa as encoder
 '''
 def spearmanRanking(loaders,models):
@@ -288,8 +288,8 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
 
 '''
-argument 1 path of first model uitbreiding2VerschilTijdTekst
-argument 2 path of second model uitbreiding2VerschilTijdTekst
+argument 1 path of first model division2DifferenceTimeText
+argument 2 path of second model division2DifferenceTimeText
 alpha=0.1
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
