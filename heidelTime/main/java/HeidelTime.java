@@ -1,3 +1,5 @@
+package heidelTime.main.java;
+
 import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.HeidelTimeStandalone;
 import de.unihd.dbs.heideltime.standalone.OutputType;

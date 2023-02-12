@@ -1,3 +1,4 @@
+import os
 import sys
 
 import spacy
@@ -16,10 +17,18 @@ The openextraction of the claims and evidence snippets are saved in the OpenInfo
 if this folder doesn't already exist 
 '''
 def openInformationExtraction(mode,path):
+    if not (os.path.exists("OpenInformation")):
+        os.mkdir("OpenInformation")
     nlp = spacy.load("en_core_web_sm")
-    predictorOIE = Predictor.from_path(
-        "https://storage.googleapis.com/allennlp-public-models/openie-model.2020.03.26.tar.gz",cuda_device=0)
-    predictorNER = pred.from_path("https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz",cuda_device=0)
+    if torch.cuda.is_available():
+        predictorOIE = Predictor.from_path(
+            "https://storage.googleapis.com/allennlp-public-models/openie-model.2020.03.26.tar.gz",cuda_device=0)
+        predictorNER = pred.from_path("https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz",cuda_devic=0)
+    else:
+        predictorOIE = Predictor.from_path(
+            "https://storage.googleapis.com/allennlp-public-models/openie-model.2020.03.26.tar.gz")
+        predictorNER = pred.from_path(
+            "https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz")
     if mode != 'Test':
         with open(path, 'r', encoding='utf-8') as file:
             for claim in file:

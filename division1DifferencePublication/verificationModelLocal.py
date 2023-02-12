@@ -339,91 +339,108 @@ if __name__ == "__main__":
         domainModels.append(domainModel)
         index += 1
 
-    # number of epochs
-    epochs = 100
-    # This is the bestAcc we have till now
-    bestAcc = 0
-    models = set()
-    with torch.no_grad():
+    if sys.argv[2] == "evaluation":
+        microF1All = 0
+        macroF1All = 0
         for model in domainModels:
-            # early_stopping
-            early_stopping = EarlyStopping(patience=3, verbose=True)
-            NNmodel = model[3]
-            NNmodel.eval()
-            validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
-                                                          domainLabelIndices, device)
-            early_stopping(validation_loss, microF1, macroF1, NNmodel)
-            optimizer = torch.optim.RMSprop(NNmodel.parameters(), lr=2e-4)
-            models.add(
-                tuple([iter(model[0]), model[3], optimizer, model[4],
-                       model[5], model[2], 0, model[0], early_stopping,
-                       model[1]]))
-
-    preprocessing(models)
-    models = set()
-
-    with torch.no_grad():
-        for model in domainModels:
-            # early_stopping
-            early_stopping = EarlyStopping(patience=3, verbose=True)
             NNmodel = model[3].loading_NeuralNetwork(sys.argv[1]).to(device)
-            NNmodel.eval()
-            print("Results model na preprocessing " + ' ' + model[4])
-            calculatePrecisionDev(model[1], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
-            validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
+            print("Results model na epochs " + model[4])
+            calculatePrecisionDev(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
+            validation_loss, microF1, macroF1 = eval_loop(model[2], NNmodel, oneHotEncoderM, domainLabels,
                                                           domainLabelIndices, device)
-            early_stopping(validation_loss, microF1, macroF1, NNmodel)
-            optimizer = torch.optim.RMSprop(NNmodel.parameters(), lr=2e-4)
-            models.add(
-                tuple([iter(model[0]), model[3], optimizer, model[4],
-                       model[5], model[2], 0, model[0], early_stopping,
-                       model[1]]))
+            print('Loss - ' + str(validation_loss))
+            microF1All += microF1
+            macroF1All += macroF1
+        print('Average micro ')
+        print(str(microF1All / 26))
+        print('Average macro')
+        print(str(macroF1All / 26))
+    else:
+        # number of epochs
+        epochs = 100
+        # This is the bestAcc we have till now
+        bestAcc = 0
+        models = set()
+        with torch.no_grad():
+            for model in domainModels:
+                # early_stopping
+                early_stopping = EarlyStopping(patience=3, verbose=True)
+                NNmodel = model[3]
+                NNmodel.eval()
+                validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
+                                                              domainLabelIndices, device)
+                early_stopping(validation_loss, microF1, macroF1, NNmodel)
+                optimizer = torch.optim.RMSprop(NNmodel.parameters(), lr=2e-4)
+                models.add(
+                    tuple([iter(model[0]), model[3], optimizer, model[4],
+                           model[5], model[2], 0, model[0], early_stopping,
+                           model[1]]))
 
-    print('start finetuning')
-    while models:
-        removeModels = []
-        removeEntirely = set()
-        for model in models:
-            batch = next(model[0], "None")
-            try:
-                if batch != "None":
-                    loss = train(batch, model[1], oneHotEncoderM, model[2], domainLabels, domainLabelIndices, device)
-                    losses[model[4]] += loss
-                else:
-                    removeModels.append(model)
-            except:
-                removeEntirely.add(model)
-        if len(removeModels) != 0:
-            for model in removeModels:
-                models.remove(model)
-                if model not in removeEntirely:
-                    model[1].eval()
-                    it = model[6] + 1
-                    validation_loss, microF1Test, macroF1Test = eval_loop(model[9], model[1], oneHotEncoderM,
-                                                                          domainLabels,
-                                                                          domainLabelIndices, device)
-                    model[8](validation_loss, microF1Test, macroF1Test, model[1])
-                    if not model[8].early_stop and it < epochs:
-                        models.add(tuple(
-                            [iter(model[7]), model[1], model[2], model[3], model[4], model[5], it, model[7],
-                             model[8],
-                             model[9]]))
+        preprocessing(models)
+        models = set()
+
+        with torch.no_grad():
+            for model in domainModels:
+                # early_stopping
+                early_stopping = EarlyStopping(patience=3, verbose=True)
+                NNmodel = model[3].loading_NeuralNetwork(sys.argv[1]).to(device)
+                NNmodel.eval()
+                print("Results model na preprocessing " + ' ' + model[4])
+                calculatePrecisionDev(model[1], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
+                validation_loss, microF1, macroF1 = eval_loop(model[1], NNmodel, oneHotEncoderM, domainLabels,
+                                                              domainLabelIndices, device)
+                early_stopping(validation_loss, microF1, macroF1, NNmodel)
+                optimizer = torch.optim.RMSprop(NNmodel.parameters(), lr=2e-4)
+                models.add(
+                    tuple([iter(model[0]), model[3], optimizer, model[4],
+                           model[5], model[2], 0, model[0], early_stopping,
+                           model[1]]))
+
+        print('start finetuning')
+        while models:
+            removeModels = []
+            removeEntirely = set()
+            for model in models:
+                batch = next(model[0], "None")
+                try:
+                    if batch != "None":
+                        loss = train(batch, model[1], oneHotEncoderM, model[2], domainLabels, domainLabelIndices, device)
+                        losses[model[4]] += loss
                     else:
-                        print("Early stopping")
-                    losses[model[4]] = 0
-    precisionModels = dict()
-    microF1All = 0
-    macroF1All = 0
-    for model in domainModels:
-        NNmodel = model[3].loading_NeuralNetwork(sys.argv[1]).to(device)
-        print("Results model na epochs " + model[4])
-        calculatePrecisionDev(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
-        validation_loss, microF1, macroF1 = eval_loop(model[2], NNmodel, oneHotEncoderM, domainLabels,
-                                                      domainLabelIndices, device)
-        print('Loss - ' + str(validation_loss))
-        microF1All += microF1
-        macroF1All += macroF1
-    print('Average micro ')
-    print(str(microF1All / 26))
-    print('Average macro')
-    print(str(macroF1All / 26))
+                        removeModels.append(model)
+                except:
+                    removeEntirely.add(model)
+            if len(removeModels) != 0:
+                for model in removeModels:
+                    models.remove(model)
+                    if model not in removeEntirely:
+                        model[1].eval()
+                        it = model[6] + 1
+                        validation_loss, microF1Test, macroF1Test = eval_loop(model[9], model[1], oneHotEncoderM,
+                                                                              domainLabels,
+                                                                              domainLabelIndices, device)
+                        model[8](validation_loss, microF1Test, macroF1Test, model[1])
+                        if not model[8].early_stop and it < epochs:
+                            models.add(tuple(
+                                [iter(model[7]), model[1], model[2], model[3], model[4], model[5], it, model[7],
+                                 model[8],
+                                 model[9]]))
+                        else:
+                            print("Early stopping")
+                        losses[model[4]] = 0
+        precisionModels = dict()
+        microF1All = 0
+        macroF1All = 0
+        for model in domainModels:
+            NNmodel = model[3].loading_NeuralNetwork(sys.argv[1]).to(device)
+            print("Results model na epochs " + model[4])
+            calculatePrecisionDev(model[2], NNmodel, oneHotEncoderM, domainLabels, domainLabelIndices, device)
+            validation_loss, microF1, macroF1 = eval_loop(model[2], NNmodel, oneHotEncoderM, domainLabels,
+                                                          domainLabelIndices, device)
+            print('Loss - ' + str(validation_loss))
+            microF1All += microF1
+            macroF1All += macroF1
+        print('Average micro ')
+        print(str(microF1All / 26))
+        print('Average macro')
+        print(str(macroF1All / 26))

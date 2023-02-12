@@ -1,1 +1,0 @@
-The evidence with the title '3.2.4.3.1. Sklearn.ensemble. RandomForestClassifier — scikit-learn ... ' says Whether to use out-of-bag samples to estimate the generalization accuracy. N_jobs : int or none ,  ... The number of jobs to run in parallel for both fit and predict . 

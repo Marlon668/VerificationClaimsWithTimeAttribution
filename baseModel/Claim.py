@@ -831,6 +831,24 @@ class claim:
         string = string[:-5]
         return string
 
+    def getPretext(self, withUpperCaseEditting=True):
+        title = ""
+        if self.articleTitle != "None":
+            sentences = self.spacy(self.articleTitle)
+            for sentence in sentences.sents:
+                if withUpperCaseEditting:
+                    title += self.processSentence(sentence)
+                else:
+                    title += str(sentence)
+        string = ""
+        string += "The evidence "
+        if len(title) > 0:
+            string += "with the title '"
+            string += title
+            string += "' "
+        string += "says "
+        return string
+
     def deriveOpenInformation(self):
         self.openInformation = []
 

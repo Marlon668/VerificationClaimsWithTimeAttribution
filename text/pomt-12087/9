@@ -1,1 +1,0 @@
-The evidence with the title 'Repl.it - DarkgoldenrodTrustyPlainsqueaker ' says Each line has a '\n' newline at the end, so strip it. Word = word.strip(). # ignore words that have capital letters or other . Characters. 

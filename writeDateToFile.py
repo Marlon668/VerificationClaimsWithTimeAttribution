@@ -13,8 +13,8 @@ import baseModel.Claim as Claim
     @param path: path to the given dataset
 '''
 def writeOptionalTimeSnippet(mode,path):
-    if not (os.path.exists(os.pardir + "/processedSnippets")):
-        os.mkdir(os.pardir + "/processedSnippets")
+    if not (os.path.exists("processedSnippets")):
+        os.mkdir("processedSnippets")
     if mode != 'Test':
         with open(path, 'r', encoding='utf-8') as file:
             for claim in file:
@@ -23,7 +23,7 @@ def writeOptionalTimeSnippet(mode,path):
                                     elements[7], elements[8], elements[9], elements[10], elements[11], elements[12],
                                     "snippets/",'non', 'non', 'non', "None")
                 for snippet in claim.snippets:
-                    claim.processDateSnippet(snippet)
+                    snippet.processPublicationDate()
     else:
         with open(path, 'r', encoding='utf-8') as file:
             for claim in file:
@@ -33,7 +33,7 @@ def writeOptionalTimeSnippet(mode,path):
                                     elements[7], elements[8], elements[9], elements[10], elements[11],
                                     "snippets/", 'non', 'non', 'non', "None")
                 for snippet in claim.snippets:
-                    claim.processDateSnippet(snippet)
+                    snippet.processPublicationDate()
 
 '''
     This function writes the raw publication date of each claim in the given dataset to
