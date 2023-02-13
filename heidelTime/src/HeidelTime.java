@@ -1,5 +1,3 @@
-package heidelTime.main.java;
-
 import de.unihd.dbs.heideltime.standalone.DocumentType;
 import de.unihd.dbs.heideltime.standalone.HeidelTimeStandalone;
 import de.unihd.dbs.heideltime.standalone.OutputType;
@@ -108,9 +106,6 @@ public class HeidelTime {
      */
     public static void processTimexesInText(String[] args) throws Exception {
         File ProcessedTimes = new File("processedTimes");
-        if not processTimes.exist(){
-            ProcessedTimes.mkdir();
-        }
         int processed = 0;
         File file = new File(args[1]);
         File indices = new File(args[2]);

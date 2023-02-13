@@ -11,7 +11,7 @@ from torch.utils.data import DataLoader
 
 class encoder(nn.Module):
     # Create neural network
-    def __init__(self,embedding_dim, hidden_dim,alpha,number_layers=2,drop_out=0.1):
+    def __init__(self,embedding_dim, hidden_dim,alpha,withPretext=False,number_layers=2,drop_out=0.1):
         super(encoder, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-distilroberta-v1')
@@ -21,6 +21,7 @@ class encoder(nn.Module):
         nn.init.xavier_uniform_(self.word_embeds.weight)
         self.forwardLSTM = nn.ModuleList().to(self.device)
         self.backwardLSTM = nn.ModuleList().to(self.device)
+        self.withPretext = withPretext
         for i in range(number_layers):
             input_size = embedding_dim if i == 0 else hidden_dim
             self.forwardLSTM.append(nn.LSTM(input_size, hidden_dim, num_layers=1)).to(self.device)
@@ -43,25 +44,32 @@ class encoder(nn.Module):
         self.alpha = float(alpha)
 
 
-    def forward(self, claim,date,positions,verbs,times,verschillenIndices,verschillenValues,train=False,isClaim = True):
-        encoded_input = self.tokenizer(claim, padding=True, truncation=False, return_tensors='pt').to(self.device)
+    def forward(self, text,date,positions,verbs,times,verschillenIndices,verschillenValues,claimId, snippetNumber=0,train=False,isClaim = True):
+        encoded_input = self.tokenizer(text, padding=True, truncation=False, return_tensors='pt').to(self.device)
+        sizePrexext = 0
+        if self.withPretext:
+            if isClaim:
+                pretextF = open("r",)
+
+            else:
+                pretextF = open("r", )
         inputForward = self.word_embeds(encoded_input['input_ids']).to(self.device)
         if positions[0]!="":
             for position in positions:
                 position = position.split(',')
-                inputForward[0][int(position[0])] = self.alpha*inputForward[0][int(position[0])] + (1-self.alpha)*self.positionEmbeddings(torch.tensor([int(position[1])+100]).to(self.device)).squeeze(0).to(self.device)
+                inputForward[0][int(position[0])-sizePrexext] = self.alpha*inputForward[0][int(position[0])-sizePrexext] + (1-self.alpha)*self.positionEmbeddings(torch.tensor([int(position[1])+100]).to(self.device)).squeeze(0).to(self.device)
         if verbs[0]!="":
             for verb in verbs:
-                inputForward[0][int(verb)] = self.alpha*inputForward[0][int(verb)] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(self.device)
+                inputForward[0][int(verb)-sizePrexext] = self.alpha*inputForward[0][int(verb)-sizePrexext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(self.device)
         if times[0]!="":
             for time in times:
-                inputForward[0][int(time)] = self.alpha*inputForward[0][int(time)] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(self.device)
+                inputForward[0][int(time)-sizePrexext] = self.alpha*inputForward[0][int(time)-sizePrexext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(self.device)
         if verschillenIndices[0]!="":
             for i in range(len(verschillenIndices)):
                 index = verschillenIndices[i]
                 if verschillenValues[i].find('Duur')==-1 and verschillenValues[i].find('Refs')==-1:
                     if verschillenValues[i].isdigit():
-                        inputForward[0][int(index)] = self.alpha*inputForward[0][int(index)] + (1-self.alpha)* self.verschil(torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(self.device)
+                        inputForward[0][int(index)-sizePrexext] = self.alpha*inputForward[0][int(index)-sizePrexext] + (1-self.alpha)* self.verschil(torch.tensor([int(verschillenValues[i])]-sizePrexext).to(self.device)).squeeze(0).to(self.device)
                 if i+1 >= len(verschillenValues):
                     break
         inputForward = torch.nn.functional.normalize(inputForward,p=2.0)
