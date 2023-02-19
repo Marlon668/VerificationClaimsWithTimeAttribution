@@ -1,6 +1,7 @@
 import json
 import os
 import pickle
+import sys
 from datetime import datetime
 import datetime
 
@@ -10,7 +11,7 @@ import spacy
 from transformers import AutoTokenizer
 from allennlp.predictors.predictor import Predictor as pred
 
-import Claim
+import baseModel.Claim as Claim
 
 '''
 Make a file with all differences in days between the evidence dates and the claimdatum
@@ -179,13 +180,13 @@ def analyseExpansion1(mode,path):
 Construct the bins with the file of all differences in days with the claimdatum
 '''
 def dataBinning(file,numberOfBins):
-    diferences = []
+    differences = []
     indices = []
     index = 0
     with open(file, 'r', encoding='utf-8') as file:
         lines = file.readlines()
         for difference in lines:
-            diferences.append(int(difference.replace('\n','')))
+            differences.append(int(difference.replace('\n','')))
             indices.append(index)
             index +=1
     file.close()
@@ -196,7 +197,7 @@ def dataBinning(file,numberOfBins):
 '''
 Make a file with all differences in days between the time entities in the text and the claimdatum
 '''
-def analyseU2(mode,path):
+def analyseExpansion2(mode,path):
     notCorrectClaim = 0
     notCorrectSnippet = 0
     totalClaims = 0

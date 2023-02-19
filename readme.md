@@ -6,7 +6,11 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 
 |Package|Version|
 |------------------------|---------|
-|allennlp|2.10.0|
+|aiohttp|3.8.3|
+|aiosignal|1.3.1|
+|allennlp|2.10.1|
+|allennlp-models|2.10.1|
+|async-timeout|4.0.2|
 |attrs|22.1.0|
 |base58|2.1.1|
 |blis|0.7.8|
@@ -20,14 +24,20 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 |click|8.1.3|
 |colorama|0.4.5|
 |commonmark|0.9.1|
+|conllu|4.4.2|
 |contourpy|1.0.5|
 |cycler|0.11.0|
 |cymem|2.0.6|
-|dill|0.3.5.1|
+|datasets|2.9.0|
+|dill|0.3.6|
 |docker-pycreds|0.4.0|
+|en-core-web-sm|3.3.0|
 |fairscale|0.4.6|
 |filelock|3.7.1|
 |fonttools|4.37.4|
+|frozenlist|1.3.3|
+|fsspec|2023.1.0|
+|ftfy|6.1.1|
 |gitdb|4.0.9|
 |GitPython|3.1.29|
 |google-api-core|2.8.2|
@@ -51,6 +61,8 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 |MarkupSafe|2.1.1|
 |matplotlib|3.6.1|
 |more-itertools|8.14.0|
+|multidict|6.0.4|
+|multiprocess|0.70.14|
 |murmurhash|1.0.8|
 |nltk|3.7|
 |numpy|1.23.1|
@@ -66,6 +78,8 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 |protobuf|3.20.0|
 |psutil|5.9.2|
 |py|1.11.0|
+|py-rouge|1.1|
+|pyarrow|11.0.0|
 |pyasn1|0.4.8|
 |pyasn1-modules|0.2.8|
 |pydantic|1.8.2|
@@ -77,6 +91,7 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 |PyYAML|6.0|
 |regex|2022.9.13|
 |requests|2.28.1|
+|responses|0.18.0|
 |rich|12.1.0|
 |rsa|4.9|
 |s3transfer|0.6.0|
@@ -111,17 +126,23 @@ This is the code for the 'Implicit Temporal Reasoning for Evidence-Based Fact-Ch
 |urllib3|1.26.12|
 |wandb|0.12.21|
 |wasabi|0.10.1|
+|wcwidth|0.2.6|
 |wheel|0.37.1|
+|word2number|1.1|
+|xxhash|3.2.0|
+|yarl|1.8.2|
 
+
+
+[HeidelTime](https://github.com/HeidelTime/heideltime) is provided as a `maven` project to automatically set the dependencies on `HeidelTime`. However it also needs [TreeTagger](https://www.cis.uni-muenchen.de/~schmid/tools/TreeTagger/#Windows). Install `TreeTagger` and set the path to `TreeTagger` in `config.props`.
 ## Content
 
+- Folder `HeidelTime` containts the java-code to normalise the publication dates and extract timexes out of the claim -and snippettext.
 - Folder `division1DifferencePublication/` contains all the code regarding the division
 of the claims/evidence into time buckets according to their publication time.
-
 - Folder `division2DifferenceTimeText/` contains all the code for the division of the
 claim/evidence into time buckets according to the publication time of the claim
 and the time references in the text of the claim/evidence.
-
 - Folder `division1And2/` contains all the code about using both the division of the
 claim/evidence according to their publication time (division 1) and the time-
 in text reference (division 2).
@@ -153,11 +174,15 @@ Do the following things:
 
 ## Preprocessing of the data
 In this section we describe with preprocessing of the data. For running the code in this section and the next section, it is assumed that those are run from **the root of the project**.
+First install the English pipeline `en_core_web_sm` by running this command:
+```sh
+python -m spacy download en_core_web_sm
+````
 ### Open Information Extraction
-For doing open information extraction. Run the file `OpenInformationExtraction.py` with as first argument the type of dataset: Dev, Train and Test (called mode in the code) and as second argument the path to the dataset. This would create a folder `OpenInformation` if it isn't already made and the open information extraction of the claim and evidence snippets will be stored in that folder. E.g.for extracting the open information of the claim and evidence snippets of the Train dataset, run the following command:
+For doing open information extraction, run the file `OpenInformationExtraction.py` with as first argument the type of dataset: Dev, Train and Test (called mode in the code) and as second argument the path to the dataset. This would create a folder `OpenInformation` if it isn't already made and the open information extraction of the claim and evidence snippets will be stored in that folder. E.g.for extracting the open information of the claim and evidence snippets of the Train dataset, run the following command:
 
 ```sh
-python OpenInformationExtraction.py Train train.tsv
+python OpenInformationExtraction.py Train train/train.tsv
 ```
 ### Editing article text of claim and snippet 
 The file `writeTextToDocument.py` contains two editing functions:
@@ -168,7 +193,7 @@ Those two functions have 4 arguments `mode`, `path`, `withTitle` and `withPretex
 Each of the functions would create a folder `text` if it isn't already made and the text editing of the claim and evidence snippets will be stored in that folder. If you prefer raw article text as input for the models, run `editArticleText` with `withTitle` and `withPretext` set to false. In the paper raw article text is used as input.  E.g. for editing the text of the claim and snippets of the Train dataset with uppercase-editing, added title and pre-text as options, run the following command:
 
 ```sh
-python writeTextToDocument.py editArticleTextWithUppercaseEditing Train train.tsv true true
+python writeTextToDocument.py editArticleTextWithUppercaseEditing Train train/train.tsv true true
 ```
 ### Processing the publication date of the claim and evidence
 
@@ -179,36 +204,45 @@ The first thing to do is writing the publication date of each claim to a file. T
 `writeClaimDate` in `writeDateToFile.py` with as arguments the type of the dataset (Dev, Train, Test) and path to that dataset. This will copy the publication time to a new file "tenses-"+mode(dev, train or test)+".txt" with a structure claimId tab publication time. E.g. to copy the publication time of each claim in the training dataset to tenses-train.txt, run the following command:
 
 ```sh
-python writeDateToFile.py writeClaimDate Train train.tsv
+python writeDateToFile.py writeClaimDate Train train/train.tsv
 ```
 
 #### 2) Normalising the publication time of the claim via Heideltime.
-The next step is to normalise the publication date of each claim by the use of Heidetime, execute the function `normalisePublicationTimeClaim` located in `HeidelTime.java` with as argument the path to "tenses-"+mode(dev, train or test)+".txt". For each claim the timex normalisation of the publication date will be saved in a xml file with as name claimId.xml and stored in the folder `ProcessedDates`.
+The next step is to normalise the publication date of each claim by the use of Heidetime, execute `normalisePublicationTimeClaim.java` located in the folder `HeidelTime` with the following arguments:
+- path to "tenses-"+mode(dev, train or test)+".txt", e.g. tenses-train.txt
+- path to folder `processedDates` where the timex normalisation of the publication dates are saved to
+
+as argument the path to "tenses-"+mode(dev, train or test)+".txt". For each claim the timex normalisation of the publication date will be saved in a xml file with as name claimId.xml and stored in the given folder `ProcessedDates`.
 
 #### 3) Optional: Write optional publication time of snippets to file and normalise them by Heideltime.
-At default, only the publication date with as structure Abbreviated month name. day, year (e.g. May 2, 2017) are considered as the publication date of the evidence. If no such date is available, it is considered that the evidence has no publication date. However an optional method is provided to search at the beginning of the evidence for a timex or for a timex near the verbs 'Published' or 'Posted'. The function `writeOptionalTimeSnippet` with as arguments the mode of the given dataset and the path to the dataset searches for those timexes and write the passages that could contain the publication date in a file with as name the snippet number in the folder processedSnippets/$claimId, e.g. processedSnippets/abbc00006/6. For doing this for each evidence of the train dataset, you could run this command:
+At default, only the publication date with as structure Abbreviated month name. day, year (e.g. May 2, 2017) are considered as the publication date of the evidence. If no such date is available, it is considered that the evidence has no publication date. However an optional method is provided to search at the beginning of the evidence for a timex or for a timex near the verbs 'Published' or 'Posted'. The function `writeOptionalTimeSnippet` with as arguments the mode of the given dataset and the path to the dataset searches for those timexes and write the passages that could contain the publication date in a file with as name the snippet number in the folder snippetDates/$claimId, e.g. snippetDates/abbc00006/6. For doing this for each evidence of the train dataset, you could run this command:
 
 ```sh
-python writeDateToFile.py writeOptionalTimeSnippet Train train.tsv
+python writeDateToFile.py writeOptionalTimeSnippet Train train/train.tsv
 ```
-After the text sections are written to a file, HeidelTime will try to detect a timex and normalise those timexes in a regular form. This is done by running `normalisePublicationTimeSnippets` in HeidelTime.
-
+After the text sections are written to a file, HeidelTime will try to detect a timex and normalise those timexes in a regular form. This is done by running `normalisePublicationTimeSnippets.java` in the `HeidelTime` folder with the following arguments:
+- path to file containing unnormalised publication times of snippets, so the folder snippetDates that is generated above
+- path to folder `processedSnippets` where the timex normalisation of the publication dates are saved to
 
 ### Extracting the timexes out of the text with Heideltime
 This step consists out of two parts. In the first part, the publication date of the claim and evidence are gathered. These dates are used as the DCT with the news variant of Heideltime. If the publication time of the claim or evidence is not available, the narratives version of Heideltime is used. 
 #### 1) Gathering the publication date of the claims or evidence
 For gathering the publication date of the claims or evidence, run `writeDateToFile` in the file `writeDateToFile.py` with params the mode of the given dataset and the path to the dataset, e.g. for the Train set, this comes down to running this command:
 ```sh
-python writeDateToFile.py writeDateToFile Train train.tsv
+python writeDateToFile.py writeDateToFile Train train/train.tsv
 ```
 This would write the dates to data/data.txt and the claimIds and evidencenumber for linking the dates to the respective claim and evidence in data/indices.txt.
 #### 2) Extracting and normalising the timexes out of the text
-Next, to extracting and normalising the timexes out of the claim/evidence and writing them to a xml file in timeml format in a new folder named `processedTimes`, run `processTimexesInText` located in `HeidelTime.java` with as arguments the path to the publicationdate and indices file produced in the previous step. 
+Next, to extracting and normalising the timexes out of the claim/evidence and writing them to a xml file in timeml format in a new folder named `processedTimes`, run `processTimexesInText.java` located in `HeidelTime` with the following arguments:
+- path to data.txt or file that contains publication date of claim and evidence
+- path to file containing indices linking publication date to claim/snippet so indices.txt
+- path to the folder containing the text of the claim and snippets so the folder text generated in the section of editing article text
+- path to the folder to save the timeml annotations of the claim and snippettext, so `processedTimes`
 
 ### Constructing the time bins
-In this step, the construction of the time bins will be explained. The files `differencePublicationDate` and `differenceTimexesInText` describe the bins used for differentiate the claims/evidence respectevely by publication date or timexes in the text. Each line in these files introduces a bin defined by two elements: the left and right end point of the closed interval, e.g. -145 -35 defines the interval between 145 and 35 days before the publication date of the claim with -145 and -35 included. These bins are written in chronological order. The included files define the bins used in the paper, but these could also be custom made. There is also an option available to search for alernative bins where each bin contains a similar number of claim/evidence. This is suggestion is done by the use of pandas qcut. For doing this, run `BinConstructor` with either 'divisionByPublicationDate' or 'differenceTimexesInText' as first argument and then the mode and the path to the dataset as second or third parameter. This would first save the differences in respectevely the files 'differenceDaysPublicationDate.txt' and 'differenceDaysTimexesInText.txt'. Thereafter by reading that file it shows a suggestion of the bins by use of qcut. For some values of `k` bins, qcut gives an error, but you could experiment quickly with a number of `k` by uncommenting the call to `analyseExpansion1` or `analyseExpansion2` on line 639 or 643 of `BinConstructor.py`. But for doing everything together you could run for example this command for getting a suggestion for the bins when dividing by publication date when using the training dataset:
+In this step, the construction of the time bins will be explained. The files `differencePublicationDate.txt` and `differenceTimexesInText.txt` describe the bins used for differentiate the claims/evidence respectevely by publication date or timexes in the text. Each line in these files introduces a bin defined by two elements: the left and right end point of the closed interval, e.g. -145 -35 defines the interval between 145 and 35 days before the publication date of the claim with -145 and -35 included. These bins are written in chronological order. The included files define the bins used in the paper, but these could also be custom made. There is also an option available to search for alernative bins where each bin contains a similar number of claim/evidence. This is suggestion is done by the use of pandas qcut. For doing this, run `BinConstructor.py` with either 'divisionByPublicationDate' or 'differenceTimexesInText' as first argument and then the mode and the path to the dataset as second or third parameter. This would first save the differences in respectevely the files 'differenceDaysPublicationDate.txt' and 'differenceDaysTimexesInText.txt'. Thereafter by reading that file it shows a suggestion of the bins by use of qcut. For some values of `k` bins, qcut gives an error, but you could experiment quickly with a number of `k` by uncommenting the call to `analyseExpansion1` or `analyseExpansion2` on line 639 or 643 of `BinConstructor.py`. But for doing everything together you could run for example this command for getting a suggestion for the bins when dividing by publication date when using the training dataset:
 ```sh
-python BinConstructor.py divisionByPublicationDate Train train.tsv
+python BinConstructor.py divisionByPublicationDate Train train/train.tsv
 ```
 ### Training the various verification models
 

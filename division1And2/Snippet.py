@@ -537,7 +537,7 @@ class snippet:
         try:
             self.publishTime =  datetime.datetime.strptime(self.publishTime[:-1], '%b %d, %Y')
         except:
-            path = os.pardir+'/processedSnippets' + '/' + self.claimID+'/'+self.number + '.xml'
+            path = os.pardir+'/snippetDates' + '/' + self.claimID+'/'+self.number + '.xml'
             if os.path.exists(path):
                 parser = etree.XMLParser(recover=True)
                 tree = etree.parse(path, parser)

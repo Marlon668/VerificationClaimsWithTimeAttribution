@@ -478,43 +478,43 @@ class snippet:
             datetime.datetime.strptime(snippet.publishTime[:-1], '%b %d, %Y')
         except:
             if snippet.optional != None:
-                if not (os.path.exists(os.pardir+"/processedSnippets" + "/" + self.claimID)):
-                    os.mkdir(os.pardir+"/processedSnippets" + "/" + self.claimID)
-                f = open(os.pardir+"/processedSnippets" + "/" + self.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                if not (os.path.exists(os.pardir+"/snippetDates" + "/" + self.claimID)):
+                    os.mkdir(os.pardir+"/snippetDates" + "/" + self.claimID)
+                f = open(os.pardir+"/snippetDates" + "/" + self.claimID + "/" + snippet.number, "w", encoding="utf-8")
                 f.write(snippet.optional + "\n")
                 f.close()
             else:
                 word_list = snippet.publishTime.split()
                 if len(word_list) <= 6:
-                    if not (os.path.exists(os.pardir+"/processedSnippets" + "/" + self.claimID)):
-                        os.mkdir(os.pardir+"/processedSnippets" + "/" + self.claimID)
-                    f = open(os.pardir+"/processedSnippets" + "/" + self.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                    if not (os.path.exists(os.pardir+"/snippetDates" + "/" + self.claimID)):
+                        os.mkdir(os.pardir+"/snippetDates" + "/" + self.claimID)
+                    f = open(os.pardir+"/snippetDates" + "/" + self.claimID + "/" + snippet.number, "w", encoding="utf-8")
                     f.write(snippet.publishTime.replace("Nob", "November").replace("Se", "September") + "\n")
                     f.close()
                 else:
                     word_list = snippet.publishTime.split("|")[0].split()
                     if len(word_list) <= 6:
-                        if not (os.path.exists("processedSnippets" + "/" + self.claimID)):
-                            os.mkdir("processedSnippets" + "/" + self.claimID)
-                        f = open("processedSnippets" + "/" + self.claimID + "/" + snippet.number, "w",
+                        if not (os.path.exists("snippetDates" + "/" + self.claimID)):
+                            os.mkdir("snippetDates" + "/" + self.claimID)
+                        f = open("snippetDates" + "/" + self.claimID + "/" + snippet.number, "w",
                                  encoding="utf-8")
                         f.write(snippet.publishTime.split("|")[0] + "\n")
                         f.close()
                     else:
                         word_list = snippet.publishTime.split(u"\u2022")[0].split()  # bullet
                         if len(word_list) <= 6:
-                            if not (os.path.exists(os.pardir + "/processedSnippets" + "/" + self.claimID)):
-                                os.mkdir(os.pardir + "/processedSnippets" + "/" + self.claimID)
-                            f = open(os.pardir + "/processedSnippets" + "/" + self.claimID + "/" + snippet.number, "w",
+                            if not (os.path.exists(os.pardir + "/snippetDates" + "/" + self.claimID)):
+                                os.mkdir(os.pardir + "/snippetDates" + "/" + self.claimID)
+                            f = open(os.pardir + "/snippetDates" + "/" + self.claimID + "/" + snippet.number, "w",
                                      encoding="utf-8")
                             f.write(snippet.publishTime.split(u"\u2022")[0] + "\n")
                             f.close()
                         else:
                             word_list = snippet.publishTime.split("-")[0].split()  # bullet
                             if len(word_list) <= 6:
-                                if not (os.path.exists(os.pardir + "/processedSnippets" + "/" + self.claimID)):
-                                    os.mkdir(os.pardir + "/processedSnippets" + "/" + self.claimID)
-                                f = open(os.pardir + "/processedSnippets" + "/" + self.claimID + "/" + snippet.number, "w",
+                                if not (os.path.exists(os.pardir + "/snippetDates" + "/" + self.claimID)):
+                                    os.mkdir(os.pardir + "/snippetDates" + "/" + self.claimID)
+                                f = open(os.pardir + "/snippetDates" + "/" + self.claimID + "/" + snippet.number, "w",
                                          encoding="utf-8")
                                 f.write(snippet.publishTime.split("-")[0] + "\n")
                                 f.close()
@@ -522,9 +522,9 @@ class snippet:
                             else:
                                 word_list = snippet.publishTime.split(":")[0].split()  # bullet
                                 if len(word_list) <= 6:
-                                    if not (os.path.exists(os.pardir + "/processedSnippets" + "/" + self.claimID)):
-                                        os.mkdir(os.pardir + "/processedSnippets" + "/" + self.claimID)
-                                    f = open(os.pardir + "/processedSnippets" + "/" + self.claimID + "/" + snippet.number,
+                                    if not (os.path.exists(os.pardir + "/snippetDates" + "/" + self.claimID)):
+                                        os.mkdir(os.pardir + "/snippetDates" + "/" + self.claimID)
+                                    f = open(os.pardir + "/snippetDates" + "/" + self.claimID + "/" + snippet.number,
                                              "w", encoding="utf-8")
                                     f.write(
                                         snippet.publishTime.split(":")[0] + "\n")

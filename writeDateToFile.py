@@ -8,13 +8,13 @@ import baseModel.Claim as Claim
     This function writes for each evidence the possible optional data (only if 
     there is no date available at the beginning of the evidence text in the 
     form of month day, year) to a file with as name the snippet number 
-    in the folder processedSnippets/$claimId
+    in the folder snippetDates/$claimId
     @param mode: Dev, Train or Test
     @param path: path to the given dataset
 '''
 def writeOptionalTimeSnippet(mode,path):
-    if not (os.path.exists("processedSnippets")):
-        os.mkdir("processedSnippets")
+    if not (os.path.exists("snippetDates")):
+        os.mkdir("snippetDates")
     if mode != 'Test':
         with open(path, 'r', encoding='utf-8') as file:
             for claim in file:
@@ -79,8 +79,8 @@ def writeClaimDate(mode,path):
     @params path: path to the dataset
 '''
 def writeDateToFile(mode,path):
-    if not (os.path.exists(os.pardir + "/data")):
-        os.mkdir(os.pardir + "/data")
+    if not (os.path.exists("data")):
+        os.mkdir("data")
     if mode != 'Test':
         with open(path, 'r', encoding='utf-8') as file:
             for claim in file:
@@ -153,7 +153,7 @@ if __name__ == "__main__":
     if sys.argv[1] == "writeClaimDate":
         writeClaimDate(sys.argv[2],sys.argv[3])
     elif sys.argv[1] == "writeDateToFile":
-        writeClaimDate(sys.argv[2], sys.argv[3])
+        writeDateToFile(sys.argv[2], sys.argv[3])
     elif sys.argv[1] == "writeOptionalTimeSnippet":
         writeOptionalTimeSnippet(sys.argv[2], sys.argv[3])
     #writeDateToFile('Dev','dev.tsv')

@@ -10,5 +10,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: com.github.heideltime:heideltime:2.2.1" level="project" />
+    <orderEntry type="library" name="Maven: org.apache.uima:uimaj-core:2.8.1" level="project" />
   </component>
 </module>

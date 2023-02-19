@@ -481,7 +481,7 @@ class snippet:
     '''
     def processPublicationDate(self, snippet,path=None):
         if path is None:
-            path = os.pardir+"/processedSnippets" + "/" + self.claimID
+            path = os.pardir+"/snippetDates" + "/" + self.claimID
         else:
             path += "/" + self.claimID
         try:
