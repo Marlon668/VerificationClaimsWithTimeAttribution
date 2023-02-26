@@ -167,7 +167,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
 
     return totalLoss,micro,macro
 
-def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
+def getLabelIndicesDomain(domainPath,labelPath):
     domainsIndices = dict()
     domainsLabels = dict()
     domainLabelIndices = dict()
@@ -193,17 +193,8 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
         domainsIndices[parts[0]] = labelIndices
         domainsLabels[parts[0]] = labelsDomain
         domainLabelIndices[parts[0]] = labelIndicesDomain
-    file = open(weightsPath, 'r')
-    lines = file.readlines()
-    for line in lines:
 
-        parts = line.split("\t")
-        weightsDomainNormal = parts[1:]
-        weightsDomainNormal[-1] = weightsDomainNormal[-1].replace('\n','')
-        domainWeights[parts[0]] = torch.zeros(len(weightsDomainNormal))
-        for i in range(len(weightsDomainNormal)):
-            domainWeights[parts[0]][domainLabelIndices[parts[0]][i]] = float(weightsDomainNormal[i])
-    return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
+    return domainsIndices,domainsLabels,domainLabelIndices
 
 def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,device):
     groundTruthLabels = []
@@ -339,7 +330,7 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence','labels/weights.tsv')
+    domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence')
     oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
     domains = domainIndices.keys()
     metadataSet = set()
@@ -352,15 +343,6 @@ if __name__ == "__main__":
     instanceEncoderM = instanceEncoder().to(device)
     evidenceRankerM = evidenceRanker(2308, 100).to(device)
     for domain in domains:
-        '''
-        load pre-constructed dataset where the textinput for claim and evidences is title + text
-        '''
-        # train_set = dump_load("train/baseModel/trainDataset-" + domain)
-        # dev_set = dump_load("dev/baseModel/devDataset-" + domain)
-        # test_set = dump_load("test/baseModel/testDataset-" + domain)
-        '''
-        construct dataset where the input for claim and evidences is only text of claim
-        '''
         train_set = NUS(mode='Train', path='train/train-' + domain + '.tsv', domain=domain)
         dev_set = NUS(mode='Dev', path='dev/dev-' + domain + '.tsv', domain=domain)
         test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)

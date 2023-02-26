@@ -29,7 +29,7 @@ class claim:
         self.articleTitle = articleTitle
         self.publishDate = publishDate
         self.claimDate = claimDate
-        if (self.claimDate == "None"):
+        if not (has_numbers(self.claimDate.split(' ')[0])):
             self.claimDate = publishDate
         self.readTags(tags)
         self.readEntities(entities)
@@ -240,7 +240,7 @@ class claim:
                                     f.close()
 
     def readPublicationDate(self):
-        path = os.pardir+'/ProcessedDates'+'/'+self.claimID+'.xml'
+        path = 'ProcessedDates'+'/'+self.claimID+'.xml'
         print(path)
         if os.path.exists(path):
             tree = ET.parse(path)
@@ -275,7 +275,10 @@ class claim:
                                  datetime.datetime.strptime(dateE,
                                                             '%Y-%m-%d')])
                         else:
-                            self.claimDate = datetime.datetime.strptime(root[0].attrib['value'], '%Y-%m-%d')
+                            if root[0].attrib['value'].find('X') == -1:
+                                self.claimDate = datetime.datetime.strptime(root[0].attrib['value'], '%Y-%m-%d')
+                            else:
+                                self.claimDate = None
                 else:
                     if root[0].attrib['value'][root[0].attrib['value'].find(':') + 1:].find(':') == -1:
                         self.claimDate = datetime.datetime.strptime(root[0].attrib['value'].replace('24:', '12:'),
@@ -285,11 +288,40 @@ class claim:
                                                                     '%Y-%m-%dT%H:%M:%S')
             else:
                 if root[0].attrib['value'].find('X') != -1:
-                    # correct fault of assigning 12pm to 24 in HeidelTime
-                    self.claimDate = datetime.datetime.strptime(
-                        root[1].attrib['value'] + root[0].attrib['value'][root[0].attrib['value'].find('T'):].replace('24:',
-                                                                                                                      '12:'),
-                        '%Y-%m-%dT%H:%M')
+                    parts = root[0].attrib['value'].split('-')
+                    parts2 = root[1].attrib['value'].split('-')
+                    i = 0
+                    j = 0
+                    date = ""
+                    while i < min(len(parts),3) or j < min(len(parts2),3):
+                        if parts[i].find('X') == -1:
+                            date += parts[i]
+                            date += "-"
+                            i += 1
+                            j += 1
+                        elif parts2[j].find('X') == -1:
+                            date += parts2[j]
+                            date += "-"
+                            i += 1
+                            j += 1
+                        else:
+                            i += 1
+                            j += 1
+                    date = date[:-1]
+                    if i == 1:
+                        self.claimDate = datetime.datetime.strptime(
+                        date,
+                        '%Y')
+                    elif i == 2:
+                        self.claimDate = datetime.datetime.strptime(
+                            date,
+                            '%Y-%m')
+                    elif i == 3:
+                        self.claimDate = datetime.datetime.strptime(
+                            date,
+                            '%Y-%m-%d')
+                    else:
+                        self.claimDate = None
                 else:
                     if root[0].attrib['value'].find('T') == -1 and root[1].attrib['value'].find('T') != -1:
                         # correct fault of assigning 12pm to 24 in HeidelTime
@@ -335,8 +367,9 @@ class claim:
             print('Not found -' +  path)
             self.claimDate = None
 
+
     def readTime(self):
-        path = os.pardir+"/ProcessedTimes" + "/" + self.claimID + "/" + "claim"+".xml"
+        path = "ProcessedTimes" + "/" + self.claimID + "/" + "claim"+".xml"
         if os.path.exists(path):
             f = open(path, "r", encoding="utf-8")
             lines = f.readlines()
@@ -744,6 +777,8 @@ class claim:
                                                             datas[indices[depth]] = [datetime.datetime.strptime(
                                                                 root[depth].attrib['value'].replace('24:', '12:'),
                                                                 '%Y-%m-%dT%H:%M:%S'),root[depth].text.strip()]
+
+            datas = [x for x in datas if not isinstance(x, int)]
             return datas,duren,refs,sets
     def readSnippets(self, path):
         self.snippets = []
@@ -783,6 +818,28 @@ class claim:
 
     def getClaim(self):
         return self.label
+
+    def getIndex(self):
+        title = ""
+        if self.articleTitle != "None":
+            sentences = self.spacy(self.articleTitle)
+            for sentence in sentences.sents:
+                title += self.processSentence(sentence)
+        if len(title)>0:
+            return 7
+        else:
+            return 4
+
+    def getIndexHeidel(self):
+        title = ""
+        if self.articleTitle != "None":
+            sentences = self.spacy(self.articleTitle)
+            for sentence in sentences.sents:
+                title += self.processSentence(sentence)
+        if len(title)>0:
+            return 6
+        else:
+            return 3
 
     def getClaimURL(self):
         return self.claimURl
@@ -854,3 +911,6 @@ class claim:
 
     def getOpenInformation(self):
         return self.openInformation
+
+def has_numbers(inputString):
+    return any(char.isdigit() for char in inputString)

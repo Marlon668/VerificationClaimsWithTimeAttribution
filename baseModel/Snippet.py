@@ -468,6 +468,8 @@ class snippet:
                                                             datas[indices[depth]] = [datetime.datetime.strptime(
                                                                 root[depth].attrib['value'].replace('24:', '12:'),
                                                                 '%Y-%m-%dT%H:%M:%S'),root[depth].text.strip()]
+
+            datas = [x for x in datas if not isinstance(x, int)]
             return datas,duren,refs,sets
 
     '''
@@ -624,11 +626,40 @@ class snippet:
                 else:
                     if len(root)>1:
                         if root[0].attrib['value'].find('X') != -1:
-                            # correct fault of assigning 12pm to 24 in HeidelTime
-                            self.publishTime = datetime.datetime.strptime(
-                                root[1].attrib['value'] + root[0].attrib['value'][root[0].attrib['value'].find('T'):].replace('24:',
-                                                                                                                              '12:'),
-                                '%Y-%m-%dT%H:%M')
+                            parts = root[0].attrib['value'].split('-')
+                            parts2 = root[1].attrib['value'].split('-')
+                            i = 0
+                            j = 0
+                            date = ""
+                            while i < min(len(parts), 3) or j < min(len(parts2), 3):
+                                if parts[i].find('X') == -1:
+                                    date += parts[i]
+                                    date += "-"
+                                    i += 1
+                                    j += 1
+                                elif parts2[j].find('X') == -1:
+                                    date += parts2[j]
+                                    date += "-"
+                                    i += 1
+                                    j += 1
+                                else:
+                                    i += 1
+                                    j += 1
+                            date = date[:-1]
+                            if i == 1:
+                                self.claimDate = datetime.datetime.strptime(
+                                    date,
+                                    '%Y')
+                            elif i == 2:
+                                self.claimDate = datetime.datetime.strptime(
+                                    date,
+                                    '%Y-%m')
+                            elif i == 3:
+                                self.claimDate = datetime.datetime.strptime(
+                                    date,
+                                    '%Y-%m-%d')
+                            else:
+                                self.claimDate = None
                         else:
                             if root[0].attrib['value'].find('T') == -1 and root[1].attrib['value'].find('T') != -1:
                                 # correct fault of assigning 12pm to 24 in HeidelTime

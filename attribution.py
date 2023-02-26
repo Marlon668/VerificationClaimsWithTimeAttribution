@@ -12,7 +12,7 @@ import numpy as np
 import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 from baseModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBase, encoderBase, encoderMetadataBasis, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis
 import torch
@@ -87,9 +87,9 @@ def calculate_outputs_and_gradients(data, model):
         for evidenceEncoding in evidenceEncodings:
             gradient = evidenceEncoding.grad.detach().cpu().numpy()[0]
             gradientsEncoding.append(gradient)
-        invoer = [claim_encoding,evidenceEncodings]
+        input = [claim_encoding,evidenceEncodings]
     gradientsEncoding = np.array(gradientsEncoding)
-    return gradientsEncoding, target_label_idx,invoer,metadata_encoding
+    return gradientsEncoding, target_label_idx,input,metadata_encoding
 
 def getInputs(data, model):
     for i in range(len(data[0])):
@@ -97,8 +97,8 @@ def getInputs(data, model):
         metadata_encoding = model.metaDataEncoder(metaDataClaim.unsqueeze(0)).to(device)
         domain = data[0][0].split('-')[0]
         output,claim_encoding,evidenceEncodings = model.forwardAttribution(data[1][i], data[2][i],metadata_encoding, domain,data[5][i],data[6][i])
-        invoer = [claim_encoding,evidenceEncodings]
-    return invoer,metadata_encoding
+        input = [claim_encoding,evidenceEncodings]
+    return input,metadata_encoding
 
 def calculate_outputs_and_gradientsIntegrated(inputs,metadata_encoding, model,target_label_idx):
     # do the pre-processing
@@ -169,7 +169,7 @@ def random_baseline_integrated_gradients(inputs,metadata_encoding, model, target
 if __name__ == '__main__':
     '''
     argument 1 path of model
-    argument 2 name of domain to take examples from to calculate attributin
+    argument 2 name of domain to take examples from to calculate attribution
     '''
     oneHotEncoderBasis = OneHotEncoderBasis.oneHotEncoder('Metadata_sequence/metadata')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -178,9 +178,7 @@ if __name__ == '__main__':
     domains = {sys.argv[2]}
     datas= []
     for domain in domains:
-        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                       pathToSave="test/time/dataset2/",
-                       domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
         dev_loader = DataLoader(test_set,
                                  batch_size=1,
                                  shuffle=False)
@@ -189,25 +187,25 @@ if __name__ == '__main__':
 
     for data in datas:
         labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderBasis = encoderBasis.encoder(300, 128).to(device)
+        encoderBasis = encoderBase.encoder(300, 128).to(device)
         encoderMetadataBasis = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderBasis = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, data[1],
                                                                     len(domainIndices[data[1]])).to(device)
-        basisModel = verificationModelBasis.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
+        baseModel = verificationModelBase.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices,
-                                                             domainWeights, data[1]).to(device)
-        basisModel.loading_NeuralNetwork(sys.argv[1])
+                                                             data[1]).to(device)
+        baseModel.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)
-            gradientsEncoding, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, basisModel)
+            gradientsEncoding, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, baseModel)
             with torch.no_grad():
-                inputs, metadata_encoding = getInputs(entry, basisModel)
+                inputs, metadata_encoding = getInputs(entry, baseModel)
                 label_index = domainLabelIndices[data[1]][domainLabels[data[1]].index(entry[4][0])]
             if predictedLabel != label_index:
-                attributionsEncoding = random_baseline_integrated_gradients(inputs,metadata_encoding, basisModel, label_index,
+                attributionsEncoding = random_baseline_integrated_gradients(inputs,metadata_encoding, baseModel, label_index,
                                                                     calculate_outputs_and_gradientsIntegrated, \
                                                                     steps=1000, num_random_trials=1)
 

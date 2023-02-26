@@ -13,15 +13,9 @@ import torch
 from torch.utils.data import DataLoader
 
 from labelMaskDomain import labelMaskDomain
-'''
-combining pre-created partitions into one dataset
-'''
-from datasetIteratie2Combiner import dump_load, dump_write, NUS
-'''
-import this for creating a new dataset
-and commebt import datasetIteratie2CombinerLocal above
-#from datasetIteratie2 import dump_load, dump_write, NUS
-'''
+
+from dataset import dump_load, dump_write, NUS
+
 from encoderMetadata import encoderMetadata
 from evidence_ranker import evidenceRanker
 from instanceEncoder import instanceEncoder
@@ -140,7 +134,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
 
     return totalLoss,micro,macro
 
-def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
+def getLabelIndicesDomain(domainPath,labelPath):
     domainsIndices = dict()
     domainsLabels = dict()
     domainLabelIndices = dict()
@@ -166,17 +160,8 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
         domainsIndices[parts[0]] = labelIndices
         domainsLabels[parts[0]] = labelsDomain
         domainLabelIndices[parts[0]] = labelIndicesDomain
-    file = open(weightsPath, 'r')
-    lines = file.readlines()
-    for line in lines:
 
-        parts = line.split("\t")
-        weightsDomainNormal = parts[1:]
-        weightsDomainNormal[-1] = weightsDomainNormal[-1].replace('\n','')
-        domainWeights[parts[0]] = torch.zeros(len(weightsDomainNormal))
-        for i in range(len(weightsDomainNormal)):
-            domainWeights[parts[0]][domainLabelIndices[parts[0]][i]] = float(weightsDomainNormal[i])
-    return domainsIndices,domainsLabels,domainLabelIndices,domainWeights
+    return domainsIndices,domainsLabels,domainLabelIndices
 
 def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,device):
     groundTruthLabels = []
@@ -332,13 +317,14 @@ def preprocessing(models,epochs=600):
 if __name__ == "__main__":
     '''
         argument 1 path to save the model/where previous model is saved
-                 2 path to save if you construct a new dataset
+                 2 parameter alpha
+                 3 evaluation/training mode
     '''
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
-        os.pardir + '/labels/labels.tsv', os.pardir + '/labels/labelSequence', os.pardir + '/labels/weights.tsv')
+        'labels/labels.tsv', 'labels/labelSequence')
     oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
     domains = domainIndices.keys()
     metadataSet = set()
@@ -352,26 +338,9 @@ if __name__ == "__main__":
     evidenceRankerM = evidenceRanker(772, 100).to(device)
 
     for domain in domains:
-        '''
-        construct a new dataset
-        train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        dev_set = NUS(mode='Dev', path=os.pardir + '/dev/dev-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        '''
-        '''
-        Combine presaved partitions of the dataset into one dataset
-        '''
-        dev_set = NUS(mode="Dev", path=os.pardir + '/dev/dev-' + domain + '.tsv',
-                      pathToSave=os.pardir + "/dev/time/dataset2/", domain=domain)
-        train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv',
-                        pathToSave=os.pardir + "/train/time/dataset2/",
-                        domain=domain)
-        test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv',
-                       pathToSave=os.pardir + "/test/time/dataset2/",
-                       domain=domain)
+        train_set = NUS(mode='Train', path='train/train-' + domain + '.tsv', domain=domain)
+        dev_set = NUS(mode='Dev', path='dev/dev-' + domain + '.tsv', domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
 
         trainMetadata = train_set.getMetaDataSet()
         devMetadata = dev_set.getMetaDataSet()
@@ -396,7 +365,7 @@ if __name__ == "__main__":
         domainModels.append(domainModel)
         index += 1
 
-    if sys.argv[2] == "evaluation":
+    if sys.argv[3] == "evaluation":
         microF1All = 0
         macroF1All = 0
         for model in domainModels:

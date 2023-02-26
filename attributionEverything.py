@@ -29,7 +29,7 @@ from division1And2.encoderGlobal import encoder as encoderEverything
 from division1And2.verificationModelGlobal import verifactionModel as verificationEverything
 from division1And2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 import torch
 from torch.utils.data import DataLoader
 

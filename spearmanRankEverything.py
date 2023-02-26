@@ -12,7 +12,7 @@ from division1And2.encoderGlobal import encoder as encoderEverything
 from division1And2.verificationModelGlobal import verifactionModel as verificationEverything
 from division1And2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 import torch
 from torch.utils.data import DataLoader
 
@@ -431,7 +431,8 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
 argument 1 path of first model division1And2
 argument 2 path of second model division1And2
 argument 3 path of third model division1And2
-alpha=0.2, beta=0.4
+argument 4 parameter alpha
+argument 5 parameter beta
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -460,7 +461,7 @@ with torch.no_grad():
     for model in models:
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderEverything(300, 128, 0.2, 0.4).to(device)
+        encoderM = encoderEverything(300, 128, sys.argv[4], sys.argv[5]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -471,11 +472,11 @@ with torch.no_grad():
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
+            model[1], sys.argv[4], sys.argv[5]).to(device)
         verificationModelEverything2040A.loading_NeuralNetwork(sys.argv[1])
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderEverything(300, 128, 0.2, 0.4).to(device)
+        encoderM = encoderEverything(300, 128, sys.argv[4], sys.argv[5]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -486,11 +487,11 @@ with torch.no_grad():
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
+            model[1], sys.argv[4], sys.argv[5]).to(device)
         verificationModelEverything2040B.loading_NeuralNetwork(sys.argv[2])
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderEverything(300, 128, 0.2, 0.4).to(device)
+        encoderM = encoderEverything(300, 128, sys.argv[4], sys.argv[5]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -501,7 +502,7 @@ with torch.no_grad():
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
+            model[1], sys.argv[4], sys.argv[5]).to(device)
         verificationModelEverything2040C.loading_NeuralNetwork(sys.argv[3])
 
         timeModels = [verificationModelEverything2040A,verificationModelEverything2040B,verificationModelEverything2040C]

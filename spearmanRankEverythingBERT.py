@@ -8,7 +8,7 @@ import numpy
 import numpy as np
 import torch.nn.functional as F
 from scipy import stats
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 from division1And2.verificationModelBERTGlobal import verifactionModel as verificationEverything
 from division1And2 import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
@@ -429,7 +429,8 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
 '''
 argument 1 path of first model division1And2
 argument 2 path of second model division1And2
-alpha=0.2, beta=0.2
+argument 3 parameter alpha
+argument 4 parameter beta
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -470,7 +471,7 @@ with torch.no_grad():
                                                                       labelEmbeddingLayerEverything,
                                                                       labelMaskDomainEverything,
                                                                       domainIndices, domainWeights,
-                                                                      domain, 0.20, 0.20)
+                                                                      domain, sys.argv[3], sys.argv[4])
         verificationModelTimeEverything2020A.loading_NeuralNetwork(sys.argv[1]).to(device)
         oneHotEncoderM = OneHotEncoder.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerEverything = labelEmbeddingLayer.labelEmbeddingLayer(2308, domainIndices)
@@ -486,7 +487,7 @@ with torch.no_grad():
                                                                       labelEmbeddingLayerEverything,
                                                                       labelMaskDomainEverything,
                                                                       domainIndices, domainWeights,
-                                                                      domain, 0.20, 0.20)
+                                                                      domain, sys.argv[3], sys.argv[4])
         verificationModelTimeEverything2020B.loading_NeuralNetwork(sys.argv[2]).to(device)
 
         timeModels = [verificationModelTimeEverything2020A,verificationModelTimeEverything2020B]

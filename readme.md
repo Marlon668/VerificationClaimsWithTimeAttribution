@@ -244,10 +244,95 @@ In this step, the construction of the time bins will be explained. The files `di
 ```sh
 python BinConstructor.py divisionByPublicationDate Train train/train.tsv
 ```
-### Training the various verification models
+### Training and evaluating the various verification models
+The various verification models are located in the following locations:
+- For basemodel (no time attribution) the BiLSTM  model is located at `baseModel\verificationModelBase.py` and for the distilRoBERTa model at `baseModel\verificationModelBaseBert.py`
+- The models with addition of the division of the claims and snippets according to the publicationdate are located at `division1DifferencePublication\verificationModelGlobal.py`
+  and `division1DifferencePublication\verificationModelBERTGlobal.py` for the global addition and `division1DifferencePublication\verificationModelLocal.py`
+  and `division1DifferencePublication\verificationModelBERTLocal.py` for the local addition.
+- The models with addition of the division of the claims and snippets according to the timexes in the text are located at `division2DifferenceTimeText\verificationModelGlobal.py`
+  and `division2DifferenceTimeText\verificationModelBERTGlobal.py` for the global addition and `division2DifferenceTimeText\verificationModelLocal.py`
+  and `division2DifferenceTimeText\verificationModelBERTLocal.py` for the local addition.
+- The models with addition of the division of the claims and snippets according to both the publication date and the timexes in the text are located at 
+  `division1And2\verificationModelGlobal.py` and `division1And2\verificationModelBERTGlobal.py` for respecitvely BiLSM and distilRoBERTa.
+For each model the learning parameters (number of epochs, batchsize, learningrate, type of optimer,...) is hardcoded. These match with the hyperparameters described in the paper.
+#### Basemodel (no timeattribution)
 
+For training the basemodel run baseModel/verificationModelBase.py when using a BiLSTM as encoder or verificationModelBERT.py when using a DistilRoBERTA model with the following arguments:
+- path to save the model/where previous model is saved
+- 'training'
 
-#### Evaluation of the models
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- path to save the model/where previous model is saved
+- 'evaluation'
+
+#### Model with attribution of the publication date
+
+The paper discusses two ways to adjust the claim/snippetencoding with the timeattribution of the publication date: a global and a local adding.
+We start with discussing the global method and thereafter the execution method for the local model will be described.
+
+#### Global model
+
+For training the global model run division1DifferencePublication/verificationModelGlobal.py when using a BiLSTM as encoder or division1DifferencePublication/verificationModelBERTGlobal.py when using a DistilRoBERTA model with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- 'training'
+
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- 'evaluation'
+
+#### Local model
+
+For training the local model run division1DifferencePublication/verificationModelLocal.py when using a BiLSTM as encoder or division1DifferencePublication/verificationModelBERTLocal.py when using a DistilRoBERTA model with the following arguments:
+- path to save the model/where previous model is saved
+- 'training'
+
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- path to save the model/where previous model is saved
+- 'evaluation'
+
+#### Model with attribution of the in text timexes
+
+The paper discusses two ways to adjust the claim/snippetencoding with the timeattribution of timexes described in the text: a global and a local adding.
+We start with discussing the global method and thereafter the execution method for the local model will be described.
+
+#### Global model
+
+For training the global model run division2DifferenceTimeText/verificationModelGlobal.py when using a BiLSTM as encoder or division2DifferenceTimeText/verificationModelBERTGlobal.py when using a DistilRoBERTA model with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- 'training'
+
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- 'evaluation'
+
+#### Local model
+
+For training the local model run division2DifferenceTimeText/verificationModelLocal.py when using a BiLSTM as encoder or division2DifferenceTimeText/verificationModelBERTLocal.py when using a DistilRoBERTA model with the following arguments:
+- parameter alpha for the attribution of the article text 
+- 'training'
+
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- parameter alpha for the attribution of the article text 
+- 'evaluation'
+
+#### Model with attribution of both the publication date and the in text timexes
+
+For training the model run division1And2/verificationModelGlobal.py when using a BiLSTM as encoder or division1And2/verificationModelBERTGlobal.py when using a DistilRoBERTA model with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- parameter beta for the attribution of the publication date
+- 'training'
+
+For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
+- path to save the model/where previous model is saved
+- parameter alpha for the attribution of the article text 
+- parameter beta for the attribution of the publication date
+- 'evaluation'
 
 ### Running the experiments
 

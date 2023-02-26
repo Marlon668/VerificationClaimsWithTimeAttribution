@@ -12,7 +12,7 @@ from division2DifferenceTimeText.encoderGlobal import encoder as encoderTekst
 from division1And2.encoderGlobal import encoder as encoderEverything
 from division1DifferencePublication.verificationModelGlobal import verifactionModel as verificationPublicatie
 from division2DifferenceTimeText.verificationModelGlobal import verifactionModel as verificationTekst
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 from division1And2.verificationModelGlobal import verifactionModel as verificationEverything
 from baseModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, verificationModelBase, encoderBase, encoderMetadataBasis, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis
@@ -603,9 +603,7 @@ domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndices
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                   pathToSave="test/time/dataset2/",
-                   domain=domain)
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
     test_loader = DataLoader(test_set,
                             batch_size=1,
                             shuffle=False)
@@ -665,7 +663,7 @@ with torch.no_grad():
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
-        basisModel = verificationModelBasis.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
+        basisModel = verificationModelBase.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,
@@ -678,7 +676,7 @@ with torch.no_grad():
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
-        basisModel2 = verificationModelBasis.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
+        basisModel2 = verificationModelBase.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,
@@ -691,7 +689,7 @@ with torch.no_grad():
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
-        basisModel3 = verificationModelBasis.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
+        basisModel3 = verificationModelBase.verifactionModel(encoderBasis, encoderMetadataBasis, instanceEncoderBasis,
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,

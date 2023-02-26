@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from scipy import stats
 from division1DifferencePublication.verificationModelBERTGlobal import verifactionModel as verificationPublicatie
 from division2DifferenceTimeText.verificationModelGlobalBERT import verifactionModel as verificationTekst
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 from division1And2.verificationModelBERTGlobal import verifactionModel as verificationEverything
 from baseModel import OneHotEncoderBasis, labelEmbeddingLayerBasis, encoderMetadataBasis, \
     instanceEncoderBasis, evidence_rankerBasis, labelMaskDomainBasis, verificationModelBaseBERT
@@ -559,9 +559,7 @@ domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndices
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                   pathToSave="test/time/dataset2/",
-                   domain=domain)
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
     test_loader = DataLoader(test_set,
                             batch_size=1,
                             shuffle=False)
@@ -623,7 +621,7 @@ with torch.no_grad():
         evidenceRankerBasis = evidence_rankerBasis.evidenceRanker(2308, 100).to(device)
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1], len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        basisModel = verificationModelBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
+        basisModel = verificationModelBaseBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
                                               evidenceRankerBasis,
                                               labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices, domainWeights,
                                               domain)
@@ -635,7 +633,7 @@ with torch.no_grad():
         labelMaskDomainBasis = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        basisModel2 = verificationModelBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
+        basisModel2 = verificationModelBaseBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
                                                             evidenceRankerBasis,
                                                             labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                             domainIndices, domainWeights,
@@ -733,101 +731,55 @@ with torch.no_grad():
             = spearmanRanking([model], basisModels, referenceModels, modelstimeText, modelsEverything)
         numberEqual1.update(numberEqual)
         file = open('resultspearman/BERT/versusBase/' + model[1], "w")
-        '''
-        if len(spearmanDomain) > 0:
-            print("Ranking Time")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanDomain)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanDomain)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomain)))
-        if len(labelsDomain) >0:
-            print("Labels domain Time")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomain)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomain)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomain)))
-            print("Labels all Time")
-        if  len(labelsAll) > 0 :
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAll)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAll)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardAll)))
-        if len(spearmanAlltimeText) > 0:
-            print("Ranking timeText")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanAlltimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomaintimeText)))
-        if len(labelsDomaintimeText) >0:
-            print("Labels domain")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomaintimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomaintimeText)))
-            print("Labels all")
-        if  len(labelsAlltimeText) > 0 :
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAlltimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAlltimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelAllDomaintimeText)))
-        if len(spearmanAllEverything) > 0:
-            print("Ranking Everything")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)))
-        if len(labelsDomainEverything) >0:
-            print("Labels domain")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomainEverything)))
-            print("Labels all")
-        if  len(labelsAllEverything) > 0 :
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelAllDomainEverything)))
-        '''
+
         if len(spearmanDomain) > 0:
             file.write("Ranking Time" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanDomain)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanDomain)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanDomain)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomain)) + "\n")
         if len(labelsDomain) > 0:
             file.write("Labels domain Time" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomain)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomain)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomain)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomain)) + "\n")
             file.write("Labels all Time" + "\n")
         if len(labelsAll) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAll)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAll)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAll)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardAll)) + "\n")
         if len(spearmanAlltimeText) > 0:
             file.write("Ranking timeText" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanAlltimeText)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomaintimeText)) + "\n")
         if len(labelsDomaintimeText) > 0:
             file.write("Labels domain" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomaintimeText)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomaintimeText)) + "\n")
             file.write("Labels all" + "\n")
         if len(labelsAlltimeText) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAlltimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAlltimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAlltimeText)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelAllDomaintimeText)) + "\n")
         if len(spearmanAllEverything) > 0:
             file.write("Ranking Everything" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)) + "\n")
         if len(labelsDomainEverything) > 0:
             file.write("Labels domain" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelDomainEverything)) + "\n")
             file.write("Labels all" + "\n")
         if len(labelsAllEverything) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelAllDomainEverything)) + "\n")
@@ -858,71 +810,40 @@ with torch.no_grad():
         numberEqual2.update(numberEqualtimeText)
         # print("Time with timeText and everything")
         file = open('resultspearman/BERT/versusTime/' + model[1], "w")
-        ''''
-        if len(spearmanAlltimeText) > 0:
-            print("Ranking timeText")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanAlltimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomaintimeText)))
-        if len(labelsDomaintimeText) >0:
-            print("Labels domain")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomaintimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomaintimeText)))
-            print("Labels all")
-        if  len(labelsAlltimeText) > 0 :
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAlltimeText)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAlltimeText)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelAllDomaintimeText)))
-        if len(spearmanAllEverything) > 0:
-            print("Ranking Everything")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)))
-        if len(labelsDomainEverything) >0:
-            print("Labels domain")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomainEverything)))
-            print("Labels all")
-        if  len(labelsAllEverything) > 0 :
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelAllDomainEverything)))
-        '''
+
         if len(spearmanAlltimeText) > 0:
             file.write("Ranking timeText" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanAlltimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanAlltimeText)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomaintimeText)) + "\n")
         if len(labelsDomaintimeText) > 0:
             file.write("Labels domain" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomaintimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomaintimeText)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomaintimeText)) + "\n")
             file.write("Labels all" + "\n")
         if len(labelsAlltimeText) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAlltimeText)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAlltimeText)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAlltimeText)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelAllDomaintimeText)) + "\n")
         if len(spearmanAllEverything) > 0:
             file.write("Ranking Everything" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)) + "\n")
         if len(labelsDomainEverything) > 0:
             file.write("Labels domain" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelDomainEverything)) + "\n")
             file.write("Labels all" + "\n")
         if len(labelsAllEverything) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelAllDomainEverything)) + "\n")
@@ -945,40 +866,23 @@ with torch.no_grad():
             = spearmanRankingtimeText([model], modelstimeText, modelsEverything)
         numberEqual3.update(numberEqualEverything)
         file = open('resultspearman/BERT/versustimeText/' + model[1], "w")
-        '''
-        print("timeText with  everything")
-        if len(spearmanAllEverything) > 0:
-            print("Ranking Everything")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)))
-        if len(labelsDomainEverything) > 0:
-            print("Labels domain")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelDomainEverything)))
-            print("Labels all")
-        if len(labelsAllEverything) > 0:
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)))
-            print("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)))
-            print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardLabelAllDomainEverything)))
-        '''
+
         if len(spearmanAllEverything) > 0:
             file.write("Ranking Everything" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(spearmanAllEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(spearmanAllEverything)) + "\n")
             file.write(
                 "Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomainEverything)) + "\n")
         if len(labelsDomainEverything) > 0:
             file.write("Labels domain" + "\n")
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsDomainEverything)) + "\n")
             file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsDomainEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelDomainEverything)) + "\n")
             file.write("Labels all" + "\n")
         if len(labelsAllEverything) > 0:
-            file.write("Gemiddelde : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
-            file.write("Deviatie: " + model[1] + " : " + str(np.std(labelsAllEverything)) + "\n")
+            file.write("Average : " + model[1] + " : " + str(np.mean(labelsAllEverything)) + "\n")
+            file.write("Average: " + model[1] + " : " + str(np.std(labelsAllEverything)) + "\n")
             file.write("Deviation under the models:: " + model[1] + " : " + str(
                 np.mean(standaardLabelAllDomainEverything)) + "\n")
         file.write(str(numberEqualEverything))
@@ -990,98 +894,50 @@ with torch.no_grad():
         labelsAllEEverything3.extend(labelsAllEverything)
         standaardLabelsAllEverything3.extend(standaardLabelAllDomainEverything)
     file = open("resultspearman/BERT/versusBase/AllDomains", "w")
-    '''
-    print("All domains for baseModel versus time,timeText and everything")
-    print("Ranking")
-    print("Gemiddelde all : " + str(np.mean(spearmanAll)))
-    print("Deviatie all : "  + str(np.std(spearmanAll)))
-    print("Deviation all : " + str(np.mean(standaard)))
-    print("stand mean deviation all : " + str(np.std(standaard)) )
-    print("Labels all")
-    print("Gemiddelde all : " + str(np.mean(labelsAllE)))
-    print("Deviatie all : " + str(np.std(labelsAllE)))
-    print("Deviation all : " + str(np.mean(standaardAll)))
-    print("stand mean deviation all : " + str(np.std(standaardAll)))
-    print("Labels domain")
-    print("Gemiddelde all : " + str(np.mean(labelsDomainE)))
-    print("Deviatie all : " + str(np.std(labelsDomainE)))
-    print("Deviation all : " + str(np.mean(standaardDomainLabelsAll)))
-    print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAll)))
-    print("Ranking timeText")
-    print("Gemiddelde all : " + str(np.mean(spearmanAlltimeText)))
-    print("Deviatie all : " + str(np.std(spearmanAlltimeText)))
-    print("Deviation all : " + str(np.mean(standaardtimeText)))
-    print("stand mean deviation all : " + str(np.std(standaardtimeText)))
-    print("Labels all timeText")
-    print("Gemiddelde all : " + str(np.mean(labelsAllEtimeText)))
-    print("Deviatie all : " + str(np.std(labelsAllEtimeText)))
-    print("Deviation all : " + str(np.mean(standaardLabelsAlltimeText)))
-    print("stand mean deviation all : " + str(np.std(standaardLabelsAlltimeText)))
-    print("Labels domain timeText")
-    print("Gemiddelde all : " + str(np.mean(labelsDomainEtimeText)))
-    print("Deviatie all : " + str(np.std(labelsDomainEtimeText)))
-    print("Deviation all : " + str(np.mean(standaardDomainLabelsAlltimeText)))
-    print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAlltimeText)))
-    print("Ranking everything")
-    print("Gemiddelde all : " + str(np.mean(spearmanAllEverything)))
-    print("Deviatie all : " + str(np.std(spearmanAllEverything)))
-    print("Deviation all : " + str(np.mean(standaardEverything)))
-    print("stand mean deviation all : " + str(np.std(standaardEverything)))
-    print("Labels all everything")
-    print("Gemiddelde all : " + str(np.mean(labelsAllEEverything)))
-    print("Deviatie all : " + str(np.std(labelsAllEEverything)))
-    print("Deviation all : " + str(np.mean(standaardLabelsAllEverything)))
-    print("stand mean deviation all : " + str(np.std(standaardLabelsAllEverything)))
-    print("Labels domain everything")
-    print("Gemiddelde all : " + str(np.mean(labelsDomainEEverything)))
-    print("Deviatie all : " + str(np.std(labelsDomainEEverything)))
-    print("Deviation all : " + str(np.mean(standaardDomainLabelsAllEverything)))
-    print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything)))
-    print(numberEqual1)
-    '''
+
     file.write("All domains for baseModel versus time,timeText and everything" + "\n")
     file.write("Ranking" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAll)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAll)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAll)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaard)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaard)) + "\n")
     file.write("Labels all" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllE)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllE)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllE)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardAll)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardAll)) + "\n")
     file.write("Labels domain" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainE)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainE)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainE)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAll)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAll)) + "\n")
     file.write("Ranking timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAlltimeTextD)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAlltimeTextD)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAlltimeTextD)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardtimeText)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardtimeText)) + "\n")
     file.write("Labels all timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllEtimeText)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllEtimeText)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllEtimeText)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardLabelsAlltimeText)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardLabelsAlltimeText)) + "\n")
     file.write("Labels domain timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainEtimeText)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainEtimeText)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainEtimeText)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAlltimeText)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAlltimeText)) + "\n")
     file.write("Ranking everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAllEverythingD)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAllEverythingD)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAllEverythingD)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardEverything)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardEverything)) + "\n")
     file.write("Labels all everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllEEverything)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllEEverything)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllEEverything)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardLabelsAllEverything)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardLabelsAllEverything)) + "\n")
     file.write("Labels domain everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainEEverything)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainEEverything)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainEEverything)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAllEverything)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything)) + "\n")
@@ -1089,68 +945,35 @@ with torch.no_grad():
     file.close()
 
     file = open("resultspearman/BERT/versusTime/AllDomains", "w")
-    '''
-    print("All domains for time versus timeText and everything")
-    print("Ranking timeText")
-    print("Gemiddelde all : " + str(np.mean(spearmanAlltimeText2)))
-    print("Deviatie all : " + str(np.std(spearmanAlltimeText2)))
-    print("Deviation all : " + str(np.mean(standaardtimeText2)))
-    print("stand mean deviation all : " + str(np.std(standaardtimeText2)))
-    print("Labels all timeText")
-    print("Gemiddelde all : " + str(np.mean(labelsAllEtimeText2)))
-    print("Deviatie all : " + str(np.std(labelsAllEtimeText2)))
-    print("Deviation all : " + str(np.mean(standaardLabelsAlltimeText2)))
-    print("stand mean deviation all : " + str(np.std(standaardLabelsAlltimeText2)))
-    print("Labels domain timeText")
-    print("Gemiddelde all : " + str(np.mean(labelsDomainEtimeText2)))
-    print("Deviatie all : " + str(np.std(labelsDomainEtimeText2)))
-    print("Deviation all : " + str(np.mean(standaardDomainLabelsAlltimeText2)))
-    print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAlltimeText2)))
-    print("Ranking everything")
-    print("Gemiddelde all : " + str(np.mean(spearmanAllEverything2)))
-    print("Deviatie all : " + str(np.std(spearmanAllEverything2)))
-    print("Deviation all : " + str(np.mean(standaardEverything2)))
-    print("stand mean deviation all : " + str(np.std(standaardEverything2)))
-    print("Labels all everything")
-    print("Gemiddelde all : " + str(np.mean(labelsAllEEverything2)))
-    print("Deviatie all : " + str(np.std(labelsAllEEverything2)))
-    print("Deviation all : " + str(np.mean(standaardLabelsAllEverything2)))
-    print("stand mean deviation all : " + str(np.std(standaardLabelsAllEverything2)))
-    print("Labels domain everything")
-    print("Gemiddelde all : " + str(np.mean(labelsDomainEEverything2)))
-    print("Deviatie all : " + str(np.std(labelsDomainEEverything2)))
-    print("Deviation all : " + str(np.mean(standaardDomainLabelsAllEverything2)))
-    print("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything2)))
-    print(numberEqual2)
-    '''
+
     file.write("All domains for time versus timeText and everything" + "\n")
     file.write("Ranking timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAlltimeText2)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAlltimeText2)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAlltimeText2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardtimeText2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardtimeText2)) + "\n")
     file.write("Labels all timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllEtimeText2)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllEtimeText2)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllEtimeText2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardLabelsAlltimeText2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardLabelsAlltimeText2)) + "\n")
     file.write("Labels domain timeText" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainEtimeText2)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainEtimeText2)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainEtimeText2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAlltimeText2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAlltimeText2)) + "\n")
     file.write("Ranking everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAllEverything2)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAllEverything2)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAllEverything2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardEverything2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardEverything2)) + "\n")
     file.write("Labels all everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllEEverything2)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllEEverything2)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllEEverything2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardLabelsAllEverything2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardLabelsAllEverything2)) + "\n")
     file.write("Labels domain everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainEEverything2)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainEEverything2)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainEEverything2)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAllEverything2)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything2)) + "\n")
@@ -1160,17 +983,17 @@ with torch.no_grad():
     file = open("resultspearman/BERT/versustimeText/AllDomains", "w")
     file.write("All domains for timeText versus everything" + "\n")
     file.write("Ranking everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(spearmanAllEverything3)) + "\n")
+    file.write("Average all : " + str(np.mean(spearmanAllEverything3)) + "\n")
     file.write("Deviatie all : " + str(np.std(spearmanAllEverything3)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardEverything3)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardEverything3)) + "\n")
     file.write("Labels all everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsAllEEverything3)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsAllEEverything3)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsAllEEverything3)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardLabelsAllEverything3)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardLabelsAllEverything3)) + "\n")
     file.write("Labels domain everything" + "\n")
-    file.write("Gemiddelde all : " + str(np.mean(labelsDomainEEverything3)) + "\n")
+    file.write("Average all : " + str(np.mean(labelsDomainEEverything3)) + "\n")
     file.write("Deviatie all : " + str(np.std(labelsDomainEEverything3)) + "\n")
     file.write("Deviation all : " + str(np.mean(standaardDomainLabelsAllEverything3)) + "\n")
     file.write("stand mean deviation all : " + str(np.std(standaardDomainLabelsAllEverything3)) + "\n")

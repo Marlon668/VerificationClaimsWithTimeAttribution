@@ -9,7 +9,7 @@ from scipy import stats
 from transformers import AutoModel
 
 from division2DifferenceTimeText.verificationModelGlobalBERT import verifactionModel as verificationTekst
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 from division2DifferenceTimeText import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
 import torch
@@ -290,7 +290,7 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
 '''
 argument 1 path of first model division2DifferenceTimeText
 argument 2 path of second model division2DifferenceTimeText
-alpha=0.1
+argument 3 parameter alpha
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -327,7 +327,7 @@ with torch.no_grad():
                                                              evidenceRankerTimeText,
                                                              labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
                                                              domainIndices, domainWeights,
-                                                             domain, 0.10)
+                                                             domain, sys.argv[3])
         verificationModelTimeText10A.loading_NeuralNetwork(sys.argv[1]).to(device)
         oneHotEncoderM = OneHotEncoder.oneHotEncoder('timeModels/Metadata_sequence/metadata')
         labelEmbeddingLayerTimeText = labelEmbeddingLayer.labelEmbeddingLayer(2308, domainIndices)
@@ -342,7 +342,7 @@ with torch.no_grad():
                                                          evidenceRankerTimeText,
                                                          labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
                                                          domainIndices, domainWeights,
-                                                         domain, 0.10)
+                                                         domain, sys.argv[3])
         verificationModelTimeText10B.loading_NeuralNetwork(sys.argv[2]).to(device)
 
         timeModels = [verificationModelTimeText10A,verificationModelTimeText10B]

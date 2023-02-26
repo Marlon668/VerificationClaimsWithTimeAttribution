@@ -12,7 +12,7 @@ from division2DifferenceTimeText.encoderGlobal import encoder as encoderTekst
 from division2DifferenceTimeText.verificationModelGlobal import verifactionModel as verificationTekst
 from division2DifferenceTimeText import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 import torch
 from torch.utils.data import DataLoader
 
@@ -293,7 +293,7 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
 argument 1 path of first model division2DifferenceTimeText
 argument 2 path of second model division2DifferenceTimeText
 argument 3 path of third model division2DifferenceTimeText
-alpha=0.25
+arguMent 4 parameter alpha that is been used
 '''
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -301,9 +301,7 @@ domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndices
 domains = domainIndices.keys()
 models = []
 for domain in domains:
-    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                   pathToSave="test/time/dataset2/",
-                   domain=domain)
+    test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
     test_loader = DataLoader(test_set,
                             batch_size=1,
                             shuffle=False)
@@ -318,7 +316,7 @@ with torch.no_grad():
     for model in models:
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderM = encoderTekst(300, 128, sys.argv[4]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -333,7 +331,7 @@ with torch.no_grad():
         verificationModelTimeAdding25A.loading_NeuralNetwork(sys.argv[1])
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderM = encoderTekst(300, 128, sys.argv[4]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -348,7 +346,7 @@ with torch.no_grad():
         verificationModelTimeAdding25A.loading_NeuralNetwork(sys.argv[2])
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderTekst(300, 128, 0.25).to(device)
+        encoderM = encoderTekst(300, 128, sys.argv[4]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)

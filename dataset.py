@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 from allennlp.predictors.predictor import Predictor as pred
 import pickle
@@ -129,7 +130,6 @@ class NUS(Dataset):
         predictorNER = pred.from_path(
             "https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz", cuda_device=-1)
         nlp = spacy.load("en_core_web_sm")
-        nlpOIE = spacy.load("en_core_web_trf")
         predictorOIE = "None"
         coreference = "None"
         tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-distilroberta-v1')
@@ -237,7 +237,7 @@ class NUS(Dataset):
                     startIndex = claim.getIndex()
                     OIE = claim.readOpenInformationExtraction()
                     indicesAll, tagsAll, positionsAll, allWords, sentencesIndices = ProcessOpenInformation(
-                        OIE, decoding, startIndex, nlpOIE)
+                        OIE, decoding, startIndex, nlp)
                     verbClaim = ""
                     for verb in tagsAll['Verbs']:
                         for part in verb:
@@ -338,27 +338,29 @@ class NUS(Dataset):
 
                         for data in datasM:
                             if type(data) == list:
-                                if data[0] in refsM:
-                                    timeClaim += "Refs-"+self.matchBucketRelativeTime(data[0],difference=0) + "\t"
-                                else:
-                                    if (claim.claimDate != None):
-                                        if type(data[0]) is tuple:
-                                            if ((data[0][
-                                                     0] - claim.claimDate).days <= 0 and (
-                                                    data[0][
-                                                        1] - claim.claimDate).days >= 0):
-                                                difference = 0
-                                            else:
-                                                if (data[0][1] - claim.claimDate).days <= 0:
-                                                    difference = (data[0][
-                                                                    1] - claim.claimDate).days
+                                if not data[0] in durenM:
+                                    if data[0] in refsM:
+                                        timeClaim += "Refs-"+self.matchBucketRelativeTime(data[0],difference=0) + "\t"
+                                    else:
+                                        if (claim.claimDate != None):
+                                            if type(data[0]) is tuple:
+                                                if ((data[0][
+                                                         0] - claim.claimDate).days <= 0 and (
+                                                        data[0][
+                                                            1] - claim.claimDate).days >= 0):
+                                                    difference = 0
                                                 else:
-                                                    difference = (data[0][
-                                                                    0] - claim.claimDate).days
-                                            timeClaim += str(self.matchBucketAbsoluteTime(difference)) + "\t"
-                                        else:
-                                            difference = (data[0]-claim.claimDate).days
-                                            timeClaim += str(self.matchBucketAbsoluteTime(difference)) + "\t"
+                                                    if (data[0][1] - claim.claimDate).days <= 0:
+                                                        difference = (data[0][
+                                                                        1] - claim.claimDate).days
+                                                    else:
+                                                        difference = (data[0][
+                                                                        0] - claim.claimDate).days
+                                                timeClaim += str(self.matchBucketAbsoluteTime(difference)) + "\t"
+                                            else:
+                                                if type(data[0]) == datetime:
+                                                    difference = (data[0]-claim.claimDate).days
+                                                    timeClaim += str(self.matchBucketAbsoluteTime(difference)) + "\t"
                         timeClaim = timeClaim[:-1]
                         self.time.append(timeClaim)
                     else:
@@ -454,17 +456,11 @@ class NUS(Dataset):
                         self.refsIndices.append(indicesRefsClaim)
                         for data in datasM:
                             if type(data) == list:
-                                if data[0] in durenM:
-                                    if self.matchBucketDuur(data[0]) != "None":
-                                        timeClaim += "Duur-"+self.matchBucketDuur(data[0]) + "\t"
-                                else:
+                                if not data[0] in durenM:
                                     if data[0] in refsM:
                                         timeClaim += "Refs-"+self.matchBucketRelativeTime(data[0],difference=0) + "\t"
                                     else:
-                                        if data[0] in setsM:
-                                            timeClaim += "Duur-" + self.matchBucketRelativeTime(data[0],
-                                                                                                difference=0) + "\t"
-                                        else:
+                                        if not data[0] in setsM:
                                             if type(data[0]) is tuple:
                                                 if (data[0][0] - claim.claimDate[1]).days >= 0:
                                                     difference = (data[0][0] - claim.claimDate[
@@ -497,7 +493,7 @@ class NUS(Dataset):
                         OIE = snippet.readOpenInformationExtraction()
                         startIndex = snippet.getIndex()
                         indicesAll, tagsAll, positionsAll, allWords, sentencesIndices = ProcessOpenInformation(
-                            OIE, decoding, startIndex, nlpOIE)
+                            OIE, decoding, startIndex, nlp)
                         if len(tagsAll['Verbs']) > 0:
                             for verb in tagsAll['Verbs']:
                                 for part in verb:
@@ -604,20 +600,13 @@ class NUS(Dataset):
                             differenceSnippets = differenceSnippets[1:]
                             for data in datasM:
                                 if type(data) == list:
-                                    if data[0] in durenM:
-                                        if self.matchBucketDuur(data[0]) != "None":
-                                            timeSnippetElements += "Duur-" + self.matchBucketDuur(data[0]) + "\t"
-                                    else:
+                                    if not data[0] in durenM:
                                         if data[0] in refsM:
                                             if differenceSnippet != "None":
                                                 timeSnippetElements += "Refs-" + self.matchBucketRelativeTime(
                                                     data[0], difference=differenceSnippet) + "\t"
                                         else:
-                                            if data[0] in setsM:
-                                                if self.matchBucketDuur(data[0]) != "None":
-                                                    timeSnippetElements += "Duur-" + self.matchBucketDuur(
-                                                        data[0]) + "\t"
-                                            else:
+                                            if not data[0] in setsM :
                                                 if (claim.claimDate != None):
                                                     if type(data[0]) is tuple:
                                                         if ((data[0][
@@ -744,22 +733,13 @@ class NUS(Dataset):
                             for data in datasM:
                                 if type(data) != int:
                                     if type(data[0]) != str:
-                                        if data[0] in durenM:
-                                            if self.matchBucketDuur(data[0]) != "None":
-                                                timeSnippetElements += "Duur-" + self.matchBucketDuur(
-                                                    data[0]) + "\t"
-                                        else:
+                                        if not data[0] in durenM:
                                             if data[0] in refsM:
                                                 if differenceSnippet != "None":
                                                     timeSnippetElements += "Refs-" + self.matchBucketRelativeTime(
                                                         data[0], difference=differenceSnippet) + "\t"
                                             else:
-                                                if data[0] in setsM:
-                                                    if self.matchBucketDuur(data[0]) != "None":
-                                                        timeSnippetElements += "Duur-" + self.matchBucketRelativeTime(
-                                                            data[0],
-                                                            difference=0) + "\t"
-                                                else:
+                                                if not data[0] in setsM:
                                                     if type(data[0]) is tuple:
                                                         if (data[0][0] - claim.claimDate[1]).days >= 0:
                                                             difference = (data[0][0] - claim.claimDate[
@@ -949,7 +929,7 @@ class NUS(Dataset):
                     startIndex = claim.getIndex()
                     OIE = claim.readOpenInformationExtraction()
                     indicesAll, tagsAll, positionsAll, allWords, sentencesIndices = ProcessOpenInformation(
-                        OIE, decoding, startIndex, nlpOIE)
+                        OIE, decoding, startIndex, nlp)
                     verbClaim = ""
                     for verb in tagsAll['Verbs']:
                         for part in verb:
@@ -1052,18 +1032,12 @@ class NUS(Dataset):
 
                         for data in datasM:
                             if type(data) == list:
-                                if data[0] in durenM:
-                                    if self.matchBucketDuur(data[0]) != "None":
-                                        timeClaim += "Duur-" + self.matchBucketDuur(data[0]) + "\t"
-                                else:
+                                if not data[0] in durenM:
                                     if data[0] in refsM:
                                         timeClaim += "Refs-" + self.matchBucketRelativeTime(data[0],
                                                                                             difference=0) + "\t"
                                     else:
-                                        if data[0] in setsM:
-                                            if self.matchBucketDuur(data[0]) != "None":
-                                                timeClaim += "Duur-" + self.matchBucketDuur(data[0]) + "\t"
-                                        else:
+                                        if not data[0] in setsM:
                                             if (claim.claimDate != None):
                                                 if type(data[0]) is tuple:
                                                     if ((data[0][
@@ -1177,10 +1151,7 @@ class NUS(Dataset):
                         self.refsIndices.append(indicesRefsClaim)
                         for data in datasM:
                             if type(data) == list:
-                                if data[0] in durenM:
-                                    if self.matchBucketDuur(data[0]) != "None":
-                                        timeClaim += "Duur-" + self.matchBucketDuur(data[0]) + "\t"
-                                else:
+                                if not data[0] in durenM:
                                     if data[0] in refsM:
                                         timeClaim += "Refs-" + self.matchBucketRelativeTime(data[0],
                                                                                             difference=0) + "\t"
@@ -1221,7 +1192,7 @@ class NUS(Dataset):
                         OIE = snippet.readOpenInformationExtraction()
                         startIndex = snippet.getIndex()
                         indicesAll, tagsAll, positionsAll, allWords, sentencesIndices = ProcessOpenInformation(
-                            OIE, decoding, startIndex, nlpOIE)
+                            OIE, decoding, startIndex, nlp)
                         if len(tagsAll['Verbs']) > 0:
                             for verb in tagsAll['Verbs']:
                                 for part in verb:
@@ -1327,21 +1298,14 @@ class NUS(Dataset):
                             differenceSnippet = differenceSnippets[0]
                             differenceSnippets = differenceSnippets[1:]
                             for data in datasM:
-                                if type(data) == list:
-                                    if data[0] in durenM:
-                                        if self.matchBucketDuur(data[0]) != "None":
-                                            timeSnippetElements += "Duur-" + self.matchBucketDuur(data[0]) + "\t"
-                                    else:
+                                if not data[0] in durenM:
+                                    if type(data) == list:
                                         if data[0] in refsM:
                                             if differenceSnippet != "None":
                                                 timeSnippetElements += "Refs-" + self.matchBucketRelativeTime(
                                                     data[0], difference=differenceSnippet) + "\t"
                                         else:
-                                            if data[0] in setsM:
-                                                if self.matchBucketDuur(data[0]) != "None":
-                                                    timeSnippetElements += "Duur-" + self.matchBucketDuur(
-                                                        data[0]) + "\t"
-                                            else:
+                                            if not data[0] in setsM:
                                                 if (claim.claimDate != None):
                                                     if type(data[0]) is tuple:
                                                         if ((data[0][
@@ -1467,46 +1431,47 @@ class NUS(Dataset):
                             differenceSnippets = differenceSnippets[1:]
                             for data in datasM:
                                 if type(data) == list:
-                                    if data[0] in refsM:
-                                        if differenceSnippet != "None":
-                                            timeSnippetElements += "Refs-" + self.matchBucketRelativeTime(
-                                                data[0], difference=differenceSnippet) + "\t"
-                                    else:
-                                        if type(data[0]) is tuple:
-                                            if (data[0][0] - claim.claimDate[1]).days >= 0:
-                                                difference = (data[0][0] - claim.claimDate[
-                                                    1]).days
+                                    if not data[0] in durenM:
+                                        if data[0] in refsM:
+                                            if differenceSnippet != "None":
+                                                timeSnippetElements += "Refs-" + self.matchBucketRelativeTime(
+                                                    data[0], difference=differenceSnippet) + "\t"
+                                        else:
+                                            if type(data[0]) is tuple:
+                                                if (data[0][0] - claim.claimDate[1]).days >= 0:
+                                                    difference = (data[0][0] - claim.claimDate[
+                                                        1]).days
+                                                    timeSnippetElements += str(
+                                                        self.matchBucketAbsoluteTime(difference)) + "\t"
+                                                else:
+                                                    if (data[0][1] - claim.claimDate[
+                                                        0]).days <= 0:
+                                                        difference = (data[0][1] -
+                                                                    claim.claimDate[0]).days
+                                                        timeSnippetElements += str(
+                                                            self.matchBucketAbsoluteTime(difference)) + "\t"
+                                                    else:
+                                                        difference = 0
+                                                        timeSnippetElements += str(
+                                                            self.matchBucketAbsoluteTime(difference)) + "\t"
+                                            else:
+                                                if ((data[0] - claim.claimDate[
+                                                    0]).days >= 0 and (
+                                                        data[0] - claim.claimDate[
+                                                    1]).days <= 0):
+                                                    difference = 0
+                                                else:
+                                                    if (data[0] - claim.claimDate[0]).days <= 0:
+                                                        difference = (data[0] - claim.claimDate[
+                                                            0]).days
+                                                    else:
+                                                        difference = (data[0] - claim.claimDate[
+                                                            1]).days
                                                 timeSnippetElements += str(
                                                     self.matchBucketAbsoluteTime(difference)) + "\t"
-                                            else:
-                                                if (data[0][1] - claim.claimDate[
-                                                    0]).days <= 0:
-                                                    difference = (data[0][1] -
-                                                                claim.claimDate[0]).days
-                                                    timeSnippetElements += str(
-                                                        self.matchBucketAbsoluteTime(difference)) + "\t"
-                                                else:
-                                                    difference = 0
-                                                    timeSnippetElements += str(
-                                                        self.matchBucketAbsoluteTime(difference)) + "\t"
-                                        else:
-                                            if ((data[0] - claim.claimDate[
-                                                0]).days >= 0 and (
-                                                    data[0] - claim.claimDate[
-                                                1]).days <= 0):
-                                                difference = 0
-                                            else:
-                                                if (data[0] - claim.claimDate[0]).days <= 0:
-                                                    difference = (data[0] - claim.claimDate[
-                                                        0]).days
-                                                else:
-                                                    difference = (data[0] - claim.claimDate[
-                                                        1]).days
-                                            timeSnippetElements += str(
-                                                self.matchBucketAbsoluteTime(difference)) + "\t"
-                            if len(timeSnippetElements) > 0 and timeSnippetElements[-1] == "\t":
-                                timeSnippetElements = timeSnippetElements[:-1]
-                            timeSnippetElements += ' 0123456789 '
+                                if len(timeSnippetElements) > 0 and timeSnippetElements[-1] == "\t":
+                                    timeSnippetElements = timeSnippetElements[:-1]
+                                timeSnippetElements += ' 0123456789 '
                     self.timeSnippets.append(timeSnippetElements)
                     self.refsIndicesSnippets.append(refsSnippetIndices)
                     self.verbIndicesSnippets.append(verbsSnippetIndices)
@@ -1558,12 +1523,6 @@ class NUS(Dataset):
 
     def getMetaDataSet(self):
         return self.metadataSet
-
-    def localTimeIndicesRemovePreText(self,claimId,id):
-        file = open("pretext" + "/" + claimId + "/" + id,encoding="utf-8")
-
-
-        return
 
     def __len__(self):
         return len(self.claimIds)

@@ -14,12 +14,8 @@ from division1DifferencePublication.labelMaskDomain import labelMaskDomain
 '''
 combining pre-created partitions into one dataset
 '''
-from division1DifferencePublication.datasetIteratie1Combiner import dump_load, dump_write, NUS
-'''
-import this for creating a new dataset
-and comment import datasetIteratie1Combiner above
-#from datasetIteratie1 import dump_load, dump_write, NUS
-'''
+from dataset import dump_load, dump_write, NUS
+
 from division1DifferencePublication.encoderGlobal import encoder
 from division1DifferencePublication.encoderMetadata import encoderMetadata
 from division1DifferencePublication.evidence_ranker import evidenceRanker
@@ -285,8 +281,6 @@ def getLabelIndicesDomain(domainPath,labelPath):
         domainsIndices[parts[0]] = labelIndices
         domainsLabels[parts[0]] = labelsDomain
         domainLabelIndices[parts[0]] = labelIndicesDomain
-    file = open(weightsPath, 'r')
-    lines = file.readlines()
     return domainsIndices,domainsLabels,domainLabelIndices
 
 def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,device):
@@ -407,7 +401,7 @@ if __name__ == "__main__":
     '''
         argument 1 path to save the model/where previous model is saved
                  2 parameter alpha
-                 3 path to save if you construct a new dataset
+                 3 training/evaluation mode
     '''
     torch.manual_seed(1)
     random.seed(1)
@@ -425,23 +419,9 @@ if __name__ == "__main__":
     instanceEncoderM = instanceEncoder().to(device)
     evidenceRankerM = evidenceRanker(772, 100).to(device)
     for domain in domains:
-        '''
-        construct a new dataset
-        train_set = NUS(mode='Train', path=os.pardir + '/train/train-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        dev_set = NUS(mode='Dev', path=os.pardir + '/dev/dev-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        test_set = NUS(mode='Test', path=os.pardir + '/test/test-' + domain + '.tsv', domain=domain,
-                        pathToSave=sys.argv[3], number=1)
-        '''
-        '''
-        Combine presaved partitions of the dataset into one dataset
-        '''
-        dev_set = NUS(mode="Dev", path=os.pardir+'/dev/dev-' + domain + '.tsv', pathToSave=os.pardir+"/dev/time/dataset2/", domain=domain)
-        train_set = NUS(mode='Train', path=os.pardir+'/train/train-' + domain + '.tsv', pathToSave=os.pardir+"/train/time/dataset2/",
-                        domain=domain)
-        test_set = NUS(mode='Test', path=os.pardir+'/test/test-' + domain + '.tsv', pathToSave=os.pardir+"/test/time/dataset2/",
-                       domain=domain)
+        train_set = NUS(mode='Train', path='train/train-' + domain + '.tsv', domain=domain)
+        dev_set = NUS(mode='Dev', path='dev/dev-' + domain + '.tsv', domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
         trainMetadata = train_set.getMetaDataSet()
         devMetadata = dev_set.getMetaDataSet()
         testMetadata = test_set.getMetaDataSet()
@@ -465,7 +445,7 @@ if __name__ == "__main__":
         domainModels.append(domainModel)
         index +=1
 
-    if sys.argv[2] == "evaluation":
+    if sys.argv[3] == "evaluation":
         microF1All = 0
         macroF1All = 0
         for model in domainModels:
