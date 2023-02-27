@@ -195,6 +195,14 @@ Each of the functions would create a folder `text` if it isn't already made and 
 ```sh
 python writeTextToDocument.py editArticleTextWithUppercaseEditing Train train/train.tsv true true
 ```
+
+You could also save the edited text in a different folder, by adding the desired savelocation as extra argument. 
+However the following commands are needed to be executed for constructing the dataset for training the models. 
+
+```sh
+python writeTextToDocument.py editArticleTextWithUppercaseEditing Train train/train.tsv true true textLocal
+python writeTextToDocument.py editArticleText Train train/train.tsv true true textHeidelTime
+```
 ### Processing the publication date of the claim and evidence
 
 This process is needed for predicting the verification label of claims with use of the publication date of the claim and evidence (`division1DifferencePublication`). For this the following steps are needed (should be executed in this order):
@@ -236,7 +244,7 @@ This would write the dates to data/data.txt and the claimIds and evidencenumber 
 Next, to extracting and normalising the timexes out of the claim/evidence and writing them to a xml file in timeml format in a new folder named `processedTimes`, run `processTimexesInText.java` located in `HeidelTime` with the following arguments:
 - path to data.txt or file that contains publication date of claim and evidence
 - path to file containing indices linking publication date to claim/snippet so indices.txt
-- path to the folder containing the text of the claim and snippets so the folder text generated in the section of editing article text
+- path to the folder containing the text of the claim and snippets so the folder `heidelTimeText` generated in the section of editing article text
 - path to the folder to save the timeml annotations of the claim and snippettext, so `processedTimes`
 
 ### Constructing the time bins

@@ -5,14 +5,15 @@ import spacy
 from allennlp.predictors.predictor import Predictor as pred
 import baseModel.Claim as Claim
 
-def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=True):
+def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=True,pathToSave="text"):
     nlp = spacy.load("en_core_web_sm")
     predictorOIE = "None"
     predictorNER = pred.from_path(
         "https://storage.googleapis.com/allennlp-public-models/ner-elmo.2021-02-12.tar.gz",cuda_device=-1)
     coreference = "None"
-    if not (os.path.exists("text")):
-        os.mkdir("text")
+
+    if not (os.path.exists(pathToSave)):
+        os.mkdir(pathToSave)
     if withPretext and not (os.path.exists("pretext")):
         os.mkdir("pretext")
     if mode != 'Test':
@@ -23,11 +24,11 @@ def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=Tru
                                     elements[6],
                                     elements[7], elements[8], elements[9], elements[10], elements[11], elements[12],
                                     "snippets/", predictorOIE, predictorNER, nlp, coreference)
-                if not (os.path.exists("text" + "/" + claim.claimID)):
-                    os.mkdir("text" + "/" + claim.claimID)
+                if not (os.path.exists(pathToSave + "/" + claim.claimID)):
+                    os.mkdir(pathToSave + "/" + claim.claimID)
                 if withPretext and not (os.path.exists("pretext" + "/" + claim.claimID)):
                     os.mkdir("pretext" + "/" + claim.claimID)
-                f = open("text" + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
+                f = open(pathToSave + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
                 f.write(claim.processDocument(withTitle))
                 f.write("\n")
                 f.close()
@@ -37,7 +38,7 @@ def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=Tru
                 f.close()
                 for snippet in claim.getSnippets():
                     doc = snippet.getSnippetText(withTitle,withPretext)
-                    f = open("text" + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                    f = open(pathToSave + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
                     f.write(doc)
                     f.write("\n")
                     f.close()
@@ -53,11 +54,11 @@ def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=Tru
                                     elements[6],
                                     elements[7], elements[8], elements[9], elements[10], elements[11],
                                     "snippets/", predictorOIE, predictorNER, nlp, coreference)
-                if not (os.path.exists("text" + "/" + claim.claimID)):
-                    os.mkdir("text" + "/" + claim.claimID)
+                if not (os.path.exists(pathToSave + "/" + claim.claimID)):
+                    os.mkdir(pathToSave + "/" + claim.claimID)
                 if withPretext and not (os.path.exists("pretext" + "/" + claim.claimID)):
                     os.mkdir("pretext" + "/" + claim.claimID)
-                f = open("text" + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
+                f = open(pathToSave + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
                 f.write(claim.processDocument(withTitle))
                 f.write("\n")
                 f.close()
@@ -67,7 +68,7 @@ def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=Tru
                 f.close()
                 for snippet in claim.getSnippets():
                     doc = snippet.getSnippetText(withTitle, withPretext)
-                    f = open("text" + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                    f = open(pathToSave + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
                     f.write(doc)
                     f.write("\n")
                     f.close()
@@ -77,13 +78,13 @@ def editArticleTextWithUppercaseEditing(mode,path,withTitle=True,withPretext=Tru
                     f.close()
     print('Done complete ' + str(path))
 
-def editArticleText(mode,path,withTitle=True,withPretext=True):
+def editArticleText(mode,path,withTitle=True,withPretext=True,pathToSave="Text"):
     nlp = spacy.load("en_core_web_sm")
     predictorOIE = "None"
     predictorNER = "None"
     coreference = "None"
-    if not (os.path.exists("text")):
-        os.mkdir("text")
+    if not (os.path.exists(pathToSave)):
+        os.mkdir(pathToSave)
     if withPretext and not (os.path.exists("pretext")):
         os.mkdir("pretext")
     if mode != 'Test':
@@ -94,11 +95,11 @@ def editArticleText(mode,path,withTitle=True,withPretext=True):
                                     elements[6],
                                     elements[7], elements[8], elements[9], elements[10], elements[11], elements[12],
                                     "snippets/", predictorOIE, predictorNER, nlp, coreference)
-                if not (os.path.exists("text" + "/" + claim.claimID)):
-                    os.mkdir("text" + "/" + claim.claimID)
+                if not (os.path.exists(pathToSave + "/" + claim.claimID)):
+                    os.mkdir(pathToSave + "/" + claim.claimID)
                 if withPretext and not (os.path.exists("pretext" + "/" + claim.claimID)):
                     os.mkdir("pretext" + "/" + claim.claimID)
-                f = open("text" + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
+                f = open(pathToSave + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
                 f.write(claim.processDocument2(withTitle))
                 f.write("\n")
                 f.close()
@@ -108,7 +109,7 @@ def editArticleText(mode,path,withTitle=True,withPretext=True):
                 f.close()
                 for snippet in claim.getSnippets():
                     doc = snippet.getSnippetText2(withTitle,withPretext)
-                    f = open("text" + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                    f = open(pathToSave + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
                     f.write(doc)
                     f.write("\n")
                     f.close()
@@ -124,11 +125,11 @@ def editArticleText(mode,path,withTitle=True,withPretext=True):
                                     elements[6],
                                     elements[7], elements[8], elements[9], elements[10], elements[11],
                                     "snippets/", predictorOIE, predictorNER, nlp, coreference)
-                if not (os.path.exists("text" + "/" + claim.claimID)):
-                    os.mkdir("text" + "/" + claim.claimID)
+                if not (os.path.exists(pathToSave + "/" + claim.claimID)):
+                    os.mkdir(pathToSave + "/" + claim.claimID)
                 if withPretext and not (os.path.exists("pretext" + "/" + claim.claimID)):
                     os.mkdir("pretext" + "/" + claim.claimID)
-                f = open("text" + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
+                f = open(pathToSave + "/" + claim.claimID + "/" + "claim", "w", encoding="utf-8")
                 f.write(claim.processDocument2(withTitle))
                 f.write("\n")
                 f.close()
@@ -138,7 +139,7 @@ def editArticleText(mode,path,withTitle=True,withPretext=True):
                 f.close()
                 for snippet in claim.getSnippets():
                     doc = snippet.getSnippetText2(withTitle,withPretext)
-                    f = open("text" + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
+                    f = open(pathToSave + "/" + claim.claimID + "/" + snippet.number, "w", encoding="utf-8")
                     f.write(doc)
                     f.write("\n")
                     f.close()
@@ -152,6 +153,12 @@ def str2bool(v):
 
 if __name__ == "__main__":
     if sys.argv[1] == "editArticleTextWithUppercaseEditing":
-        editArticleTextWithUppercaseEditing(sys.argv[2],sys.argv[3],str2bool(sys.argv[4]),str2bool(sys.argv[5]))
+        if len(sys.argv) == 6:
+            editArticleTextWithUppercaseEditing(sys.argv[2],sys.argv[3],str2bool(sys.argv[4]),str2bool(sys.argv[5]))
+        else:
+            editArticleTextWithUppercaseEditing(sys.argv[2], sys.argv[3], str2bool(sys.argv[4]), str2bool(sys.argv[5]),sys.argv[6])
     else:
-        editArticleText(sys.argv[2], sys.argv[3], str2bool(sys.argv[4]), str2bool(sys.argv[5]))
+        if len(sys.argv) == 6:
+            editArticleText(sys.argv[2], sys.argv[3], str2bool(sys.argv[4]), str2bool(sys.argv[5]))
+        else:
+            editArticleText(sys.argv[2], sys.argv[3], str2bool(sys.argv[4]), str2bool(sys.argv[5]),sys.argv[6])

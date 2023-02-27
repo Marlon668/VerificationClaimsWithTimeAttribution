@@ -1546,11 +1546,11 @@ def dump_load(name):
     return dataset
 
 def getClaimTextLocal(claim):
-    file = open("text" + "/" + claim.claimID + "/" + "claim", encoding="utf-8")
+    file = open("textLocal" + "/" + claim.claimID + "/" + "claim", encoding="utf-8")
     return file.read()
 
 def getSnippetTextLocal(snippet):
-    file = open("text" + "/" + snippet.claimID + "/" + snippet.number, encoding="utf-8")
+    file = open("textLocal" + "/" + snippet.claimID + "/" + snippet.number, encoding="utf-8")
     return file.read()
 
 def getClaimText(claim):
