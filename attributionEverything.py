@@ -295,7 +295,8 @@ if __name__ == '__main__':
     '''
     argument 1 path of model
     argument 2 name of domain to take examples from to calculate attribution
-    alpha=0.2, beta=0.4
+    argument 3 parameter alpha
+    argument 4 parameter beta
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -314,7 +315,7 @@ if __name__ == '__main__':
     for data in datas:
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderEverything(300, 128, 0.2,0.4).to(device)
+        encoderM = encoderEverything(300, 128, sys.argv[3],sys.argv[4]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
@@ -325,7 +326,7 @@ if __name__ == '__main__':
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
             domainIndices, domainWeights,
-            data[1],0.2,0.4).to(device)
+            data[1],sys.argv[3],sys.argv[4]).to(device)
         verificationModelEverything2040A.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)

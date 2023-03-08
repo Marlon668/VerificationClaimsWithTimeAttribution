@@ -13,11 +13,11 @@ import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
 
-from division1DifferencePublication.encoderGlobal import encoder as encoderPublicatie
-from division1DifferencePublication.verificationModelGlobal import verifactionModel as verificationPublicatie
+from division1DifferencePublication.encoderGlobal import encoder as encoderPublication
+from division1DifferencePublication.verificationModelGlobal import verifactionModel as verificationPublication
 from division1DifferencePublication import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 import torch
 from torch.utils.data import DataLoader
 
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     '''
     argument 1 path of model
     argument 2 name of domain to take examples from to calculate attribution
-    alpha=0.9
+    argument 3 alpha
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -229,13 +229,13 @@ if __name__ == '__main__':
     for data in datas:
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderM = encoderPublication(300, 128, sys.argv[3]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, data[1],
                                                            len(domainIndices[data[1]])).to(device)
-        verificationModelTime90A = verificationPublicatie(encoderM, encoderMetadataM, instanceEncoderM,
+        verificationModelTime90A = verificationPublication(encoderM, encoderMetadataM, instanceEncoderM,
                                                                          evidenceRankerM,
                                                                          labelEmbeddingLayerM, labelMaskDomainM,
                                                                          domainIndices, domainWeights,

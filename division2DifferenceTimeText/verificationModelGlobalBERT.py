@@ -29,7 +29,7 @@ With DistilRoBERTa encoder
 '''
 class verifactionModel(nn.Module):
     # Create neural network
-    def __init__(self,transformer,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domainWeights,domain,alpha):
+    def __init__(self,transformer,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha):
         super(verifactionModel, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-distilroberta-v1')
@@ -43,10 +43,6 @@ class verifactionModel(nn.Module):
         self.softmax = torch.nn.Softmax(dim=0).to(self.device)
         self.domain = domain
         self.alpha = float(alpha)
-        self.domainWeights = domainWeights[domain].to(self.device)
-        self.domainWeights /= self.domainWeights.max().to(self.device)
-        self.domainWeights = F.normalize(self.domainWeights, p=0, dim=0).to(self.device)
-        self.domainWeights = self.domainWeights * (1 / torch.sum(self.domainWeights)).to(self.device)
         self.claimDate = nn.Embedding(2, 768).to(self.device)
         self.evidenceDate = nn.Embedding(22, 768).to(self.device)
         self.positionEmbeddings = nn.Embedding(200, 768).to(self.device)
@@ -349,7 +345,6 @@ def getLabelIndicesDomain(domainPath,labelPath):
     domainsIndices = dict()
     domainsLabels = dict()
     domainLabelIndices = dict()
-    domainWeights = dict()
     labelSequence = []
     file = open(labelPath,'r')
     lines = file.readlines()
@@ -505,7 +500,7 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
+    domainIndices, domainLabels, domainLabelIndices = getLabelIndicesDomain(
         'labels/labels.tsv','labels/labelSequence')
     oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
     domains = domainIndices.keys()
@@ -540,7 +535,7 @@ if __name__ == "__main__":
         labelMaskDomainM = labelMaskDomain(2308, domainIndices, domain, len(domainIndices[domain])).to(device)
         verificationModelM = verifactionModel(transformer, encoderMetadataM, instanceEncoderM,
                                               evidenceRankerM,
-                                              labelEmbeddingLayerM, labelMaskDomainM, domainIndices, domainWeights,
+                                              labelEmbeddingLayerM, labelMaskDomainM, domainIndices,
                                               domain,sys.argv[2]).to(device)
         domainModel = [train_loader, dev_loader, test_loader, verificationModelM, domain, index]
         domainModels.append(domainModel)

@@ -22,11 +22,12 @@ class NUS(Dataset):
         path: the path of the given dataset
         domain: the domain where the claims are come from
     '''
-    def __init__(self, mode,path,domain,withPretext=False):
+    def __init__(self, mode,path,domain):
         super().__init__()
         assert mode in ['Train', 'Dev', 'Test']
         self.domain = domain
-        self.withPretext = withPretext
+        self.claimPreTextSize = []
+        self.snippetPreTextSize = []
         print('Loading {} set...'.format(mode))
         self.mode = mode
         print('Get buckets of differences')
@@ -143,6 +144,7 @@ class NUS(Dataset):
                                         elements[7], elements[8], elements[9], elements[10], elements[11], elements[12],
                                         "snippets", predictorOIE, predictorNER, nlp, coreference)
                     claim.readPublicationDate()
+                    self.getNumbersOfTokensPreText(tokenizer, claim)
                     bucketsSnippetClaim = ''
                     verbsSnippetIndices =''
                     timeSnippetIndices = ''
@@ -835,6 +837,7 @@ class NUS(Dataset):
                                         elements[7], elements[8], elements[9], elements[10], elements[11],
                                         "snippets", predictorOIE, predictorNER, nlp, coreference)
                     claim.readPublicationDate()
+                    self.getNumbersOfTokensPreText(tokenizer, claim)
                     bucketsSnippetClaim = ''
                     verbsSnippetIndices = ''
                     timeSnippetIndices = ''
@@ -1521,6 +1524,21 @@ class NUS(Dataset):
             file.close()
         return dataSnippets
 
+    def getNumbersOfTokensPreText(self, tokenizer, claim):
+        file = open("pretext" + "/" + claim.claimID + "/" + "claim", encoding="utf-8")
+        preText = file.read()
+        inputIds =[i for i in tokenizer.encode(text=preText)]
+        self.claimPreTextSize.append(len(inputIds))
+        snippetPreTextSize = ''
+        for snippet in claim.snippets:
+            file = open("pretext" + "/" + claim.claimID + "/" + snippet.number, encoding="utf-8")
+            preText = file.read()
+            input_ids = [i for i in tokenizer.encode(text=preText)]
+            snippetPreTextSize += str(len(input_ids))
+            snippetPreTextSize += ' 0123456789 '
+            file.close()
+        self.snippetPreTextSize.append(snippetPreTextSize)
+
     def getMetaDataSet(self):
         return self.metadataSet
 
@@ -1531,7 +1549,8 @@ class NUS(Dataset):
         return self.claimIds[index], self.documents[index], self.snippetDocs[index],self.metadata[index], self.labels[index],\
                self.claimDateAvailable[index],self.bucketsSnippets[index],self.verbIndices[index], self.timeIndices[index],\
                self.positions[index],self.refsIndices[index],self.time[index],self.verbIndicesSnippets[index],\
-               self.timeIndicesSnippets[index],self.positionsSnippets[index],self.refsIndicesSnippets[index],self.timeSnippets[index]
+               self.timeIndicesSnippets[index],self.positionsSnippets[index],self.refsIndicesSnippets[index],self.timeSnippets[index], \
+               self.claimPreTextSize[index],self.snippetPreTextSize[index]
 
 # Dump dataset into file
 def dump_write(dataset, name):
@@ -2388,6 +2407,10 @@ for c in train_loader:
     print(c[15])
     print('Time Heidel snippet')
     print(c[16])
+    print('Number of tokens pretext claim')
+    print(c[17])
+    print('Number of tokens pretext snippet')
+    print(c[18])
     break
 print("Done dataset")
 '''

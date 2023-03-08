@@ -12,11 +12,11 @@ import numpy as np
 import torch.nn.functional as F
 from fontTools.merge import cmap
 from matplotlib import pyplot as plt, colors
-from division2DifferenceTimeText.encoderGlobal import encoder as encoderTekst
-from division2DifferenceTimeText.verificationModelGlobal import verifactionModel as verificationTekst
+from division2DifferenceTimeText.encoderGlobal import encoder as encoderText
+from division2DifferenceTimeText.verificationModelGlobal import verifactionModel as verificationText
 from division2DifferenceTimeText import OneHotEncoder, labelEmbeddingLayer, encoderMetadata, \
     instanceEncoder, evidence_ranker, labelMaskDomain
-from datasetIteratie2Combiner import NUS
+from dataset import NUS
 import torch
 from torch.utils.data import DataLoader
 
@@ -248,7 +248,7 @@ if __name__ == '__main__':
     '''
     argument 1 path of model
     argument 2 name of domain to take examples from to calculate attribution
-    alpha=0.25
+    argument 3 alpha
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -268,13 +268,13 @@ if __name__ == '__main__':
     for data in datas:
         oneHotEncoder = OneHotEncoder.oneHotEncoder('Metadata_sequence/metadata')
         labelEmbeddingLayerM = labelEmbeddingLayer.labelEmbeddingLayer(772, domainIndices)
-        encoderM = encoderTekst(300, 128,0.25).to(device)
+        encoderM = encoderText(300, 128,sys.argv[3]).to(device)
         encoderMetadataM = encoderMetadata.encoderMetadata(3, 3, oneHotEncoder).to(device)
         instanceEncoderM = instanceEncoder.instanceEncoder().to(device)
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, data[1],
                                                            len(domainIndices[data[1]])).to(device)
-        verificationModelTimeAdding25A = verificationTekst(
+        verificationModelTimeAdding25A = verificationText(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,

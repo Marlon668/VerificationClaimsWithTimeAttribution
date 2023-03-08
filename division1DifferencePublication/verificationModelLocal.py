@@ -35,7 +35,7 @@ Local version of extension 1: adding buckets of publicationtime
 '''
 class verifactionModel(nn.Module):
     # Create neural network
-    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domainWeights,domain):
+    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain):
         super(verifactionModel, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.encoder = encoder
@@ -47,10 +47,6 @@ class verifactionModel(nn.Module):
         self.labelMaskDomain = labelMaskDomain
         self.softmax = torch.nn.Softmax(dim=0).to(self.device)
         self.domain = domain
-        self.domainWeights = domainWeights[domain].to(self.device)
-        self.domainWeights /= self.domainWeights.max().to(self.device)
-        self.domainWeights = F.normalize(self.domainWeights,p=0,dim=0).to(self.device)
-        self.domainWeights = self.domainWeights*(1/torch.sum(self.domainWeights)).to(self.device)
 
     def forward(self,claim,evidences,metadata_encoding,domain,claimDate,snippetDates):
         claim_encoding = self.encoder(claim,claimDate).to(self.device)
@@ -126,7 +122,6 @@ def getLabelIndicesDomain(domainPath,labelPath):
     domainsIndices = dict()
     domainsLabels = dict()
     domainLabelIndices = dict()
-    domainWeights = dict()
     labelSequence = []
     file = open(labelPath,'r')
     lines = file.readlines()
@@ -272,7 +267,7 @@ if __name__ == "__main__":
     torch.manual_seed(1)
     random.seed(1)
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    domainIndices,domainLabels,domainLabelIndices,domainWeights = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence')
+    domainIndices,domainLabels,domainLabelIndices = getLabelIndicesDomain('labels/labels.tsv','labels/labelSequence')
     oneHotEncoderM = oneHotEncoder('Metadata_sequence/metadata')
     domains = domainIndices.keys()
     metadataSet = set()
@@ -306,7 +301,7 @@ if __name__ == "__main__":
         labelMaskDomainM = labelMaskDomain(772, domainIndices, domain, len(domainIndices[domain])).to(device)
         verificationModelM = verifactionModel(encoderM, encoderMetadataM, instanceEncoderM,
                                               evidenceRankerM,
-                                              labelEmbeddingLayerM, labelMaskDomainM, domainIndices, domainWeights,
+                                              labelEmbeddingLayerM, labelMaskDomainM, domainIndices,
                                               domain).to(device)
         domainModel = [train_loader, dev_loader, test_loader, verificationModelM, domain, index]
         domainModels.append(domainModel)
