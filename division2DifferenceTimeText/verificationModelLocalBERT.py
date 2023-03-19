@@ -31,7 +31,7 @@ With DistilRoBERTa encoder
 '''
 class verifactionModel(nn.Module):
     # Create neural network
-    def __init__(self,transformer,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha):
+    def __init__(self,transformer,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha,withPretext=False):
         super(verifactionModel, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.tokenizer = AutoTokenizer.from_pretrained('sentence-transformers/all-distilroberta-v1')
@@ -51,6 +51,7 @@ class verifactionModel(nn.Module):
         self.predicateEmbeddings = nn.Embedding(2, 768).to(self.device)
         self.verschil = nn.Embedding(86, 768).to(self.device)
         self.wordEmbeddings = self.transformer.embeddings.word_embeddings.requires_grad_(True)
+        self.withPreText = withPretext
 
     # Mean Pooling - Take attention mask into account for correct averaging
     def mean_pooling(self, model_output, attention_mask):
@@ -59,7 +60,9 @@ class verifactionModel(nn.Module):
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1),min=1e-9)
 
     def forward(self,claim,evidences,metadata_encoding,domain,claimDate,snippetDates,verbsClaim,timeExpressionsClaim,positionClaim,timeRefsClaim,
-                timeHeidelClaim,verbsSnippets,timeExpressionsSnippets,positionSnippets,timeRefsSnippets,timeHeidelSnippets):
+                timeHeidelClaim,verbsSnippets,timeExpressionsSnippets,positionSnippets,timeRefsSnippets,timeHeidelSnippets,sizePretextClaim,sizePretextSnippets):
+        if self.withPreText:
+            sizePretextClaim=0
         encoded_input = self.tokenizer(claim, padding=True, truncation=True, return_tensors='pt', max_length=512)
         inputForward = self.wordEmbeddings(encoded_input['input_ids'].to(self.device)).to(self.device)
         positions = positionClaim.split('\t')
@@ -70,26 +73,26 @@ class verifactionModel(nn.Module):
         if positions[0] != "":
             for position in positions:
                 position = position.split(',')
-                if int(position[0]) <512:
-                    inputForward[0][int(position[0])] = self.alpha*inputForward[0][int(position[0])] + (1-self.alpha)* self.positionEmbeddings(
+                if int(position[0]) - sizePretextClaim >= 0 and int(position[0]) <512:
+                    inputForward[0][int(position[0])-sizePretextClaim] = self.alpha*inputForward[0][int(position[0])-sizePretextClaim] + (1-self.alpha)* self.positionEmbeddings(
                         torch.tensor([int(position[1]) + 100]).to(self.device)).squeeze(0).to(self.device)
         if verbs[0] != "":
             for verb in verbs:
-                if int(verb) < 512:
-                    inputForward[0][int(verb)] = self.alpha*inputForward[0][int(verb)] + (1-self.alpha)* self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(
+                if int(verb) - sizePretextClaim >= 0 and int(verb) <512:
+                    inputForward[0][int(verb)-sizePretextClaim] = self.alpha*inputForward[0][int(verb)-sizePretextClaim] + (1-self.alpha)* self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(
                         self.device)
         if times[0] != "":
             for time in times:
-                if int(time) < 512:
-                    inputForward[0][int(time)] = self.alpha*inputForward[0][int(time)]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(
+                if int(time) - sizePretextClaim >= 0 and int(time) <512:
+                    inputForward[0][int(time)-sizePretextClaim] = self.alpha*inputForward[0][int(time)-sizePretextClaim]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(
                         self.device)
         if verschillenIndices[0] != "":
             for i in range(len(verschillenIndices)):
                 index = verschillenIndices[i]
-                if int(index) < 512:
+                if int(index) - sizePretextClaim >= 0 and int(index) <512:
                     if verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
                         if verschillenValues[i].isdigit():
-                            inputForward[0][int(index)] = self.alpha*inputForward[0][int(index)]+(1-self.alpha)* self.verschil(
+                            inputForward[0][int(index)-sizePretextClaim] = self.alpha*inputForward[0][int(index)-sizePretextClaim]+(1-self.alpha)* self.verschil(
                                 torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(self.device)
                 if i + 1 >= len(verschillenValues):
                     break
@@ -105,6 +108,7 @@ class verifactionModel(nn.Module):
         positionSnippets = positionSnippets.split(' 0123456789 ')[:-1]
         timeRefsSnippets = timeRefsSnippets.split(' 0123456789 ')[:-1]
         timeHeidelSnippets = timeHeidelSnippets.split(' 0123456789 ')[:-1]
+        sizePretextSnippet = sizePretextSnippets.split(' 0123456789 ')[:-1]
         snippetDates = snippetDates.split('\t')
         for i in range(len(evidences)):
             encoded_input = self.tokenizer(evidences[i], padding=True, truncation=True, return_tensors='pt',
@@ -115,31 +119,33 @@ class verifactionModel(nn.Module):
             timeExpressionsSnippet = timeExpressionsSnippets[i].split('\t')
             timeRefsSnippet = timeRefsSnippets[i].split('\t')
             timeHeidelSnippet = timeHeidelSnippets[i].split('\t')
+            if self.withPreText:
+                sizePretextSnippet[i]=0
             if positionSnippet[0] != "":
                 for position in positionSnippet:
                     position = position.split(',')
-                    if int(position[0]) < 512:
-                        inputForward[0][int(position[0])] = self.alpha*inputForward[0][int(position[0])]+(1-self.alpha)* self.positionEmbeddings(
+                    if int(position[0]) - sizePretextSnippet[i] >= 0 and int(position[0]) < 512:
+                        inputForward[0][int(position[0])-sizePretextSnippet[i]] = self.alpha*inputForward[0][int(position[0])- sizePretextSnippet[i]]+(1-self.alpha)* self.positionEmbeddings(
                             torch.tensor([int(position[1]) + 100]).to(self.device)).squeeze(0).to(self.device)
             if verbsSnippet[0] != "":
                 for verb in verbsSnippet:
-                    if int(verb)<512:
-                        inputForward[0][int(verb)] = self.alpha*inputForward[0][int(verb)]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(
+                    if int(verb) - sizePretextSnippet[i] >= 0 and int(verb)<512:
+                        inputForward[0][int(verb)- sizePretextSnippet[i]] = self.alpha*inputForward[0][int(verb)- sizePretextSnippet[i]]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(
                             0).to(
                             self.device)
             if timeExpressionsSnippet[0] != "":
                 for time in timeExpressionsSnippet:
-                    if int(time)<512:
-                        inputForward[0][int(time)] = self.alpha*inputForward[0][int(time)]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(
+                    if int(time) - sizePretextSnippet[i] >= 0 and int(time)<512:
+                        inputForward[0][int(time)- sizePretextSnippet[i]] = self.alpha*inputForward[0][int(time)- sizePretextSnippet[i]]+(1-self.alpha)* self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(
                             0).to(
                             self.device)
             if timeRefsSnippet[0] != "":
                 for j in range(len(timeRefsSnippet)):
                     index = timeRefsSnippet[j]
-                    if timeHeidelSnippet[j].find('Duur') == -1 and timeHeidelSnippet[j].find('Refs') == -1:
+                    if index - sizePretextSnippet[i] >= 0 and timeHeidelSnippet[j].find('Duur') == -1 and timeHeidelSnippet[j].find('Refs') == -1:
                         if timeHeidelSnippet[j].isdigit():
                             if int(index)<512:
-                                inputForward[0][int(index)] = self.alpha* inputForward[0][int(index)] + (1-self.alpha)*self.verschil(
+                                inputForward[0][int(index)- sizePretextSnippet[i]] = self.alpha* inputForward[0][int(index)- sizePretextSnippet[i]] + (1-self.alpha)*self.verschil(
                                     torch.tensor([int(timeHeidelSnippet[j])]).to(self.device)).squeeze(0).to(self.device)
                     if j + 1 >= len(timeHeidelSnippet):
                         break
@@ -191,7 +197,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
                 prediction = model(c[1][i], c[2][i], metadata_encoding, domain, c[5][i], c[6][i],
                                    c[7][i],
                                    c[8][i], c[9][i], c[10][i], c[11][i], c[12][i], c[13][i],
-                                   c[14][i], c[15][i], c[16][i]).to(device)
+                                   c[14][i], c[15][i], c[16][i],c[17][i],c[18][i]).to(device)
                 if predictionBatch.size()[0]==0:
                     predictionBatch = prediction.unsqueeze(0).to(device)
                     predictedLabels.append(torch.argmax(prediction).item())
@@ -254,7 +260,7 @@ def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLab
                 prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain, batch[5][i], batch[6][i],
                                    batch[7][i],
                                    batch[8][i], batch[9][i], batch[10][i], batch[11][i], batch[12][i], batch[13][i],
-                                   batch[14][i], batch[15][i], batch[16][i]).to(device)
+                                   batch[14][i], batch[15][i], batch[16][i],batch[17][i],batch[18][i]).to(device)
                 groundTruthLabels.append(domainLabelIndices[domain][domainLabels[domain].index(batch[4][i])])
                 predictedLabels.append(torch.argmax(prediction).item())
 
@@ -274,7 +280,7 @@ def getPredictions(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndic
                 prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain, batch[5][i], batch[6][i],
                                    batch[7][i],
                                    batch[8][i], batch[9][i], batch[10][i], batch[11][i], batch[12][i], batch[13][i],
-                                   batch[14][i], batch[15][i], batch[16][i]).to(device)
+                                   batch[14][i], batch[15][i], batch[16][i],batch[17][i],batch[18][i]).to(device)
                 pIndex = torch.argmax(prediction).item()
                 plabel = domainLabels[domain][domainLabelIndices[domain].index(pIndex)]
                 predictions[batch[0][i]] = plabel
@@ -290,7 +296,7 @@ def train(batch,model,oneHotEncoder, optimizer,domainLabels,domainLabelIndices,d
         domain = batch[0][0].split('-')[0]
         prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain,batch[5][i],batch[6][i],batch[7][i],
                            batch[8][i],batch[9][i],batch[10][i],batch[11][i],batch[12][i],batch[13][i],
-                           batch[14][i],batch[15][i],batch[16][i]).to(device)
+                           batch[14][i],batch[15][i],batch[16][i],batch[17][i],batch[18][i]).to(device)
         if predictionBatch.size()[0] == 0:
             predictionBatch = prediction.unsqueeze(0).to(device)
         else:
@@ -370,6 +376,7 @@ if __name__ == "__main__":
         argument 1 path to save the model/where previous model is saved
                  2 parameter alpha
                  3 evaluation/training mode
+                 4 withPretext
     '''
     torch.manual_seed(1)
     random.seed(1)
@@ -411,7 +418,7 @@ if __name__ == "__main__":
         verificationModelM = verifactionModel(transformer, encoderMetadataM, instanceEncoderM,
                                               evidenceRankerM,
                                               labelEmbeddingLayerM, labelMaskDomainM, domainIndices,
-                                              domain, sys.argv[2]).to(device)
+                                              domain, sys.argv[2],bool(sys.argv[4])).to(device)
         domainModel = [train_loader, dev_loader, test_loader, verificationModelM, domain, index]
         domainModels.append(domainModel)
         index += 1

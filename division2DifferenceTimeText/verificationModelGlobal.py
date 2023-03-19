@@ -31,7 +31,7 @@ Global version of extension 2: adding buckets of difference between time entitie
 '''
 class verifactionModel(nn.Module):
     # Create neural network
-    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha=0.25):
+    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha=0.25,withPreText=false):
         super(verifactionModel, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.encoder = encoder
@@ -44,10 +44,14 @@ class verifactionModel(nn.Module):
         self.softmax = torch.nn.Softmax(dim=0).to(self.device)
         self.domain = domain
         self.alpha = alpha
+        self.withPreText = withPreText
 
     def forward(self,claim,evidences,metadata_encoding,domain,claimDate,snippetDates,verbsClaim,timeExpressionsClaim,positionClaim,timeRefsClaim,
-                timeHeidelClaim,verbsSnippets,timeExpressionsSnippets,positionSnippets,timeRefsSnippets,timeHeidelSnippets):
-        claim_encoding = self.encoder(claim,claimDate,positionClaim.split('\t'),verbsClaim.split('\t'),timeExpressionsClaim.split('\t'),timeRefsClaim.split('\t'),timeHeidelClaim.split('\t')).to(self.device)
+                timeHeidelClaim,verbsSnippets,timeExpressionsSnippets,positionSnippets,timeRefsSnippets,timeHeidelSnippets,
+                sizePretextClaim, sizePretextSnippets):
+        if self.withPreText:
+            sizePretextClaim = 0
+        claim_encoding = self.encoder(claim,claimDate,positionClaim.split('\t'),verbsClaim.split('\t'),timeExpressionsClaim.split('\t'),timeRefsClaim.split('\t'),timeHeidelClaim.split('\t'),sizePretextClaim).to(self.device)
         distribution = torch.zeros(len(self.labelDomains[domain])).to(self.device)
         evidences = evidences.split(' 0123456789 ')[:-1]
         verbsSnippets = verbsSnippets.split(' 0123456789 ')[:-1]
@@ -55,6 +59,7 @@ class verifactionModel(nn.Module):
         positionSnippets = positionSnippets.split(' 0123456789 ')[:-1]
         timeRefsSnippets = timeRefsSnippets.split(' 0123456789 ')[:-1]
         timeHeidelSnippets = timeHeidelSnippets.split(' 0123456789 ')[:-1]
+        sizePretextSnippet = sizePretextSnippets.split(' 0123456789 ')[:-1]
         snippetDates = snippetDates.split('\t')
         for i in range(len(evidences)):
             positionSnippet = positionSnippets[i].split('\t')
@@ -62,8 +67,10 @@ class verifactionModel(nn.Module):
             timeExpressionsSnippet = timeExpressionsSnippets[i].split('\t')
             timeRefsSnippet = timeRefsSnippets[i].split('\t')
             timeHeidelSnippet = timeHeidelSnippets[i].split('\t')
+            if self.withPreText:
+                sizePretextSnippet[i]=0
             evidence_encoding = self.encoder(evidences[i],int(snippetDates[i+1]),positionSnippet,verbsSnippet,timeExpressionsSnippet,
-                                             timeRefsSnippet,timeHeidelSnippet,isClaim=False).to(self.device)
+                                             timeRefsSnippet,timeHeidelSnippet,sizePretextSnippet[i],isClaim=False).to(self.device)
             instance_encoding = self.instanceEncoder(claim_encoding.squeeze(0),evidence_encoding.squeeze(0),metadata_encoding.squeeze(0)).to(self.device)
             rank_evidence = self.evidenceRanker(instance_encoding).to(self.device)
             label_distribution = self.labelEmbedding(instance_encoding,domain).to(self.device)
@@ -74,11 +81,13 @@ class verifactionModel(nn.Module):
     def forwardAttribution(self, claim, evidences, metadata_encoding, domain, claimDate, snippetDates, verbsClaim,
                            timeExpressionsClaim, positionClaim, timeRefsClaim,
                            timeHeidelClaim, verbsSnippets, timeExpressionsSnippets, positionSnippets, timeRefsSnippets,
-                           timeHeidelSnippets):
+                           timeHeidelSnippets,sizePretextClaim, sizePretextSnippets):
+        if self.withPreText:
+            sizePretextClaim = 0
         claim_encodingFull, claim_EncodingWithoutTime, times = \
             self.encoder.forwardAttribution(claim, claimDate,positionClaim.split('\t'),
                                             verbsClaim.split('\t'),timeExpressionsClaim.split('\t'),
-                                            timeRefsClaim.split('\t'),timeHeidelClaim.split('\t'))
+                                            timeRefsClaim.split('\t'),timeHeidelClaim.split('\t'),sizePretextClaim)
         distribution = torch.zeros(len(self.labelDomains[self.domain])).to(self.device)
         evidences = evidences.split(' 0123456789 ')[:-1]
         verbsSnippets = verbsSnippets.split(' 0123456789 ')[:-1]
@@ -86,6 +95,7 @@ class verifactionModel(nn.Module):
         positionSnippets = positionSnippets.split(' 0123456789 ')[:-1]
         timeRefsSnippets = timeRefsSnippets.split(' 0123456789 ')[:-1]
         timeHeidelSnippets = timeHeidelSnippets.split(' 0123456789 ')[:-1]
+        sizePretextSnippet = sizePretextSnippets.split(' 0123456789 ')[:-1]
         snippetDates = snippetDates.split('\t')
         evidenceEncodings = []
         for i in range(len(evidences)):
@@ -94,9 +104,11 @@ class verifactionModel(nn.Module):
             timeExpressionsSnippet = timeExpressionsSnippets[i].split('\t')
             timeRefsSnippet = timeRefsSnippets[i].split('\t')
             timeHeidelSnippet = timeHeidelSnippets[i].split('\t')
+            if self.withPreText:
+                sizePretextSnippet[i]=0
             evidence_encoding, evidence_EncodingWithoutTime, timeEvidences = self.encoder.forwardAttribution(
                 evidences[i], int(snippetDates[i + 1]), positionSnippet, verbsSnippet, timeExpressionsSnippet,
-                timeRefsSnippet, timeHeidelSnippet, isClaim=False)
+                timeRefsSnippet, timeHeidelSnippet, sizePretextSnippet[i],isClaim=False)
             evidenceEncodings.append((evidence_encoding, evidence_EncodingWithoutTime, timeEvidences))
             instance_encoding = self.instanceEncoder(claim_encodingFull, evidence_encoding,
                                                      metadata_encoding.squeeze(0)).to(self.device)
@@ -176,10 +188,12 @@ class verifactionModel(nn.Module):
     def getRankingEvidencesLabels(self, claim, evidences, metadata_encoding, domain, claimDate, snippetDates,
                                   verbsClaim, timeExpressionsClaim, positionClaim, timeRefsClaim,
                                   timeHeidelClaim, verbsSnippets, timeExpressionsSnippets, positionSnippets,
-                                  timeRefsSnippets, timeHeidelSnippets):
+                                  timeRefsSnippets, timeHeidelSnippets,sizePretextClaim, sizePretextSnippets):
+        if self.withPreText:
+            sizePretextClaim = 0
         claim_encoding = self.encoder(claim, claimDate, positionClaim.split('\t'), verbsClaim.split('\t'),
                                       timeExpressionsClaim.split('\t'), timeRefsClaim.split('\t'),
-                                      timeHeidelClaim.split('\t')).to(self.device)
+                                      timeHeidelClaim.split('\t'),sizePretextClaim).to(self.device)
         ranking = []
         labelsAll = []
         labelsDomain = []
@@ -192,6 +206,7 @@ class verifactionModel(nn.Module):
         positionSnippets = positionSnippets.split(' 0123456789 ')[:-1]
         timeRefsSnippets = timeRefsSnippets.split(' 0123456789 ')[:-1]
         timeHeidelSnippets = timeHeidelSnippets.split(' 0123456789 ')[:-1]
+        sizePretextSnippet = sizePretextSnippets.split(' 0123456789 ')[:-1]
         snippetDates = snippetDates.split('\t')
         for i in range(len(evidences)):
             positionSnippet = positionSnippets[i].split('\t')
@@ -199,9 +214,11 @@ class verifactionModel(nn.Module):
             timeExpressionsSnippet = timeExpressionsSnippets[i].split('\t')
             timeRefsSnippet = timeRefsSnippets[i].split('\t')
             timeHeidelSnippet = timeHeidelSnippets[i].split('\t')
+            if self.withPreText:
+                sizePretextSnippet[i]=0
             evidence_encoding = self.encoder(evidences[i], int(snippetDates[i + 1]), positionSnippet, verbsSnippet,
                                              timeExpressionsSnippet,
-                                             timeRefsSnippet, timeHeidelSnippet, isClaim=False).to(self.device)
+                                             timeRefsSnippet, timeHeidelSnippet,sizePretextSnippet[i], isClaim=False).to(self.device)
             instance_encoding = self.instanceEncoder(claim_encoding.squeeze(0), evidence_encoding.squeeze(0),
                                                      metadata_encoding.squeeze(0)).to(self.device)
             if allEqual:
@@ -235,20 +252,23 @@ class verifactionModel(nn.Module):
     def getRankingLabelsPerBin(self, index, claim, evidences, metadata_encoding, domain, claimDate, snippetDates,
                                verbsClaim, timeExpressionsClaim, positionClaim, timeRefsClaim,
                                timeHeidelClaim, verbsSnippets, timeExpressionsSnippets, positionSnippets,
-                               timeRefsSnippets, timeHeidelSnippets):
+                               timeRefsSnippets, timeHeidelSnippets,sizePretextClaim, sizePretextSnippets):
+        if self.withPreText:
+            sizePretextClaim = 0
         labelsAll = {}
         labelsAllIndices = {}
         labelsDomain = {}
         labelsDomainIndices = {}
         claim_encoding = self.encoder(claim, claimDate, positionClaim.split('\t'), verbsClaim.split('\t'),
                                       timeExpressionsClaim.split('\t'), timeRefsClaim.split('\t'),
-                                      timeHeidelClaim.split('\t')).to(self.device)
+                                      timeHeidelClaim.split('\t'),sizePretextClaim).to(self.device)
         evidences = evidences.split(' 0123456789 ')[:-1]
         verbsSnippets = verbsSnippets.split(' 0123456789 ')[:-1]
         timeExpressionsSnippets = timeExpressionsSnippets.split(' 0123456789 ')[:-1]
         positionSnippets = positionSnippets.split(' 0123456789 ')[:-1]
         timeRefsSnippets = timeRefsSnippets.split(' 0123456789 ')[:-1]
         timeHeidelSnippets = timeHeidelSnippets.split(' 0123456789 ')[:-1]
+        sizePretextSnippet = sizePretextSnippets.split(' 0123456789 ')[:-1]
         snippetDates = snippetDates.split('\t')
         for i in range(len(evidences)):
             positionSnippet = positionSnippets[i].split('\t')
@@ -256,9 +276,11 @@ class verifactionModel(nn.Module):
             timeExpressionsSnippet = timeExpressionsSnippets[i].split('\t')
             timeRefsSnippet = timeRefsSnippets[i].split('\t')
             timeHeidelSnippet = timeHeidelSnippets[i].split('\t')
+            if self.withPreText:
+                sizePretextSnippet[i]=0
             evidence_encoding = self.encoder(evidences[i], int(snippetDates[i + 1]), positionSnippet, verbsSnippet,
                                              timeExpressionsSnippet,
-                                             timeRefsSnippet, timeHeidelSnippet, isClaim=False).to(self.device)
+                                             timeRefsSnippet, timeHeidelSnippet,sizePretextSnippet[i], isClaim=False).to(self.device)
             instance_encoding = self.instanceEncoder(claim_encoding, evidence_encoding,
                                                      metadata_encoding.squeeze(0)).to(self.device)
             timeSnippetsEntry = set()
@@ -324,7 +346,7 @@ def eval_loop(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndices,de
                 prediction = model(c[1][i], c[2][i], metadata_encoding, domain, c[5][i], c[6][i],
                                    c[7][i],
                                    c[8][i], c[9][i], c[10][i], c[11][i], c[12][i], c[13][i],
-                                   c[14][i], c[15][i], c[16][i]).to(device)
+                                   c[14][i], c[15][i], c[16][i],c[17][i],c[18][i]).to(device)
                 if predictionBatch.size()[0]==0:
                     predictionBatch = prediction.unsqueeze(0).to(device)
                     predictedLabels.append(torch.argmax(prediction).item())
@@ -384,11 +406,10 @@ def calculatePrecisionDev(dataloader, model,oneHotEncoder,domainLabels,domainLab
                 metaDataClaim = oneHotEncoder.encode(batch[3][i],device)
                 metadata_encoding = model.metaDataEncoder(metaDataClaim.unsqueeze(0)).to(device)
                 domain = batch[0][0].split('-')[0]
-                #print(c[0][i])
                 prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain, batch[5][i], batch[6][i],
                                    batch[7][i],
                                    batch[8][i], batch[9][i], batch[10][i], batch[11][i], batch[12][i], batch[13][i],
-                                   batch[14][i], batch[15][i], batch[16][i]).to(device)
+                                   batch[14][i], batch[15][i], batch[16][i],batch[17][i],batch[18][i]).to(device)
                 groundTruthLabels.append(domainLabelIndices[domain][domainLabels[domain].index(batch[4][i])])
                 predictedLabels.append(torch.argmax(prediction).item())
 
@@ -408,7 +429,7 @@ def getPredictions(dataloader, model,oneHotEncoder,domainLabels,domainLabelIndic
                 prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain, batch[5][i], batch[6][i],
                                    batch[7][i],
                                    batch[8][i], batch[9][i], batch[10][i], batch[11][i], batch[12][i], batch[13][i],
-                                   batch[14][i], batch[15][i], batch[16][i]).to(device)
+                                   batch[14][i], batch[15][i], batch[16][i],batch[17][i],batch[18][i]).to(device)
                 pIndex = torch.argmax(prediction).item()
                 plabel = domainLabels[domain][domainLabelIndices[domain].index(pIndex)]
                 predictions[batch[0][i]] = plabel
@@ -424,7 +445,7 @@ def trainFinetuning(batch,model,oneHotEncoder, optimizer,domainLabels,domainLabe
         domain = batch[0][0].split('-')[0]
         prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain,batch[5][i],batch[6][i],batch[7][i],
                            batch[8][i],batch[9][i],batch[10][i],batch[11][i],batch[12][i],batch[13][i],
-                           batch[14][i],batch[15][i],batch[16][i]).to(device)
+                           batch[14][i],batch[15][i],batch[16][i],batch[17][i],batch[18][i]).to(device)
         if predictionBatch.size()[0] == 0:
             predictionBatch = prediction.unsqueeze(0).to(device)
         else:
@@ -454,7 +475,7 @@ def train(batch,model,oneHotEncoder, optimizer,domainLabels,domainLabelIndices,d
         domain = batch[0][0].split('-')[0]
         prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain,batch[5][i],batch[6][i],batch[7][i],
                            batch[8][i],batch[9][i],batch[10][i],batch[11][i],batch[12][i],batch[13][i],
-                           batch[14][i],batch[15][i],batch[16][i]).to(device)
+                           batch[14][i],batch[15][i],batch[16][i],batch[17][i],batch[18][i]).to(device)
         if predictionBatch.size()[0] == 0:
             predictionBatch = prediction.unsqueeze(0).to(device)
         else:
@@ -532,6 +553,7 @@ if __name__ == "__main__":
         argument 1 path to save the model/where previous model is saved
 	             2 parameter alpha
                  3 evaluation/training mode
+                 4 withPreText
     '''
     torch.manual_seed(1)
     random.seed(1)
@@ -573,7 +595,7 @@ if __name__ == "__main__":
         labelMaskDomainM = labelMaskDomain(772,domainIndices,domain,len(domainIndices[domain])).to(device)
         verificationModelM = verifactionModel(encoderM, encoderMetadataM, instanceEncoderM,
                                             evidenceRankerM,
-                                            labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domain).to(device)
+                                            labelEmbeddingLayerM,labelMaskDomainM, domainIndices,domain,sys.argv[2],bool(sys.argv[4])).to(device)
         domainModel = [train_loader, dev_loader, test_loader, verificationModelM, domain, index]
         domainModels.append(domainModel)
         index += 1

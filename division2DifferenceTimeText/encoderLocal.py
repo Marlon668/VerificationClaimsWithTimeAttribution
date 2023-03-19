@@ -44,32 +44,29 @@ class encoder(nn.Module):
         self.alpha = float(alpha)
 
 
-    def forward(self, text,date,positions,verbs,times,verschillenIndices,verschillenValues,claimId, snippetNumber=0,train=False,isClaim = True):
+    def forward(self, text,date,positions,verbs,times,verschillenIndices,verschillenValues,claimId,sizePretext=0, snippetNumber=0,train=False,isClaim = True):
         encoded_input = self.tokenizer(text, padding=True, truncation=False, return_tensors='pt').to(self.device)
-        sizePrexext = 0
-        if self.withPretext:
-            if isClaim:
-                pretextF = open("r",)
-
-            else:
-                pretextF = open("r", )
         inputForward = self.word_embeds(encoded_input['input_ids']).to(self.device)
         if positions[0]!="":
             for position in positions:
                 position = position.split(',')
-                inputForward[0][int(position[0])-sizePrexext] = self.alpha*inputForward[0][int(position[0])-sizePrexext] + (1-self.alpha)*self.positionEmbeddings(torch.tensor([int(position[1])+100]).to(self.device)).squeeze(0).to(self.device)
+                if int(position[0])-sizePretext >=0:
+                    inputForward[0][int(position[0])-sizePretext] = self.alpha*inputForward[0][int(position[0])-sizePretext] + (1-self.alpha)*self.positionEmbeddings(torch.tensor([int(position[1])+100]).to(self.device)).squeeze(0).to(self.device)
         if verbs[0]!="":
             for verb in verbs:
-                inputForward[0][int(verb)-sizePrexext] = self.alpha*inputForward[0][int(verb)-sizePrexext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(self.device)
+                if int(verb)-sizePretext >=0:
+                    inputForward[0][int(verb)-sizePretext] = self.alpha*inputForward[0][int(verb)-sizePretext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([0]).to(self.device)).squeeze(0).to(self.device)
         if times[0]!="":
             for time in times:
-                inputForward[0][int(time)-sizePrexext] = self.alpha*inputForward[0][int(time)-sizePrexext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(self.device)
+                if int(time) - sizePretext >= 0:
+                    inputForward[0][int(time)-sizePretext] = self.alpha*inputForward[0][int(time)-sizePretext] + (1-self.alpha)*self.predicateEmbeddings(torch.tensor([1]).to(self.device)).squeeze(0).to(self.device)
         if verschillenIndices[0]!="":
             for i in range(len(verschillenIndices)):
                 index = verschillenIndices[i]
                 if verschillenValues[i].find('Duur')==-1 and verschillenValues[i].find('Refs')==-1:
                     if verschillenValues[i].isdigit():
-                        inputForward[0][int(index)-sizePrexext] = self.alpha*inputForward[0][int(index)-sizePrexext] + (1-self.alpha)* self.verschil(torch.tensor([int(verschillenValues[i])]-sizePrexext).to(self.device)).squeeze(0).to(self.device)
+                        if int(index) - sizePretext >= 0:
+                            inputForward[0][int(index)-sizePretext] = self.alpha*inputForward[0][int(index)-sizePretext] + (1-self.alpha)* self.verschil(torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(self.device)
                 if i+1 >= len(verschillenValues):
                     break
         inputForward = torch.nn.functional.normalize(inputForward,p=2.0)
