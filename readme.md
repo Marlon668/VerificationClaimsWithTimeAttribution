@@ -312,21 +312,25 @@ For training the global model run division2DifferenceTimeText/verificationModelG
 - path to save the model/where previous model is saved
 - parameter alpha for the attribution of the article text 
 - 'training'
+- boolean value to indicate if the article text is with preText or not
 
 For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
 - path to save the model/where previous model is saved
 - parameter alpha for the attribution of the article text 
 - 'evaluation'
+- boolean value to indicate if the article text is with preText or not
 
 #### Local model
 
 For training the local model run division2DifferenceTimeText/verificationModelLocal.py when using a BiLSTM as encoder or division2DifferenceTimeText/verificationModelBERTLocal.py when using a DistilRoBERTA model with the following arguments:
 - parameter alpha for the attribution of the article text 
 - 'training'
+- boolean value to indicate if the article text is with preText or not
 
 For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
 - parameter alpha for the attribution of the article text 
 - 'evaluation'
+- boolean value to indicate if the article text is with preText or not
 
 #### Model with attribution of both the publication date and the in text timexes
 
@@ -335,14 +339,21 @@ For training the model run division1And2/verificationModelGlobal.py when using a
 - parameter alpha for the attribution of the article text 
 - parameter beta for the attribution of the publication date
 - 'training'
+- boolean value to indicate if the article text is with preText or not
 
 For evaluating the various models in terms of micro- and macroF1, run the above files with the following arguments:
 - path to save the model/where previous model is saved
 - parameter alpha for the attribution of the article text 
 - parameter beta for the attribution of the publication date
 - 'evaluation'
+- boolean value to indicate if the article text is with preText or not
 
 ### Running the experiments
 
+#### Time and text attributions
 
-
+The code for these tests are based on [](https://github.com/ankurtaly/Integrated-Gradients)
+The files `attribution.py`, `attributionTime.py`, `attributionTimeText.py` and `attributionEverything`
+describe the calculatation for the time and text attributions for the BiLSTM versions of respectively 
+`Basemodel` and the global models of `Model with attribution of the publication date`, `Model with attribution of the in text timexes`
+and `Model with attribution of both the publication date and the in text timexes`.

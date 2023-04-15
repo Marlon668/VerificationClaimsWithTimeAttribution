@@ -135,7 +135,7 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "timeText"+str(index) in numberEqual[domain]:
                             numberEqual[domain]["timeText"+str(index)] += 1
@@ -185,7 +185,7 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -293,7 +293,7 @@ def spearmanRankingTime(loaders,basisModels,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "timeText"+str(index) in numberEqual[domain]:
                             numberEqual[domain]["timeText"+str(index)] += 1
@@ -345,7 +345,7 @@ def spearmanRankingTime(loaders,basisModels,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -414,7 +414,7 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                     data[5][i], data[6][i],
                     data[7][i],
                     data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                    data[14][i], data[15][i], data[16][i])
+                    data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                 if allEqualB1:
                     if "timeText" in numberEqual[domain]:
                         numberEqual[domain]["timeText"] += 1
@@ -431,7 +431,7 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                     data[5][i], data[6][i],
                     data[7][i],
                     data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                    data[14][i], data[15][i], data[16][i])
+                    data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                 if allEqualB2:
                     if "timeText2" in numberEqual[domain]:
                         numberEqual[domain]["timeText2"] += 1
@@ -463,7 +463,9 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                                                                                                      data[13][i],
                                                                                                      data[14][i],
                                                                                                      data[15][i],
-                                                                                                     data[16][i])
+                                                                                                     data[16][i],
+                                                                                                     data[17][i],
+                                                                                                     data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -551,6 +553,11 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     argument 6 path of second model division2DifferenceTimeText
     argument 7 path of first model division1And2
     argument 8 path of second model division1And2
+    argument 9 parameter alpha for models division1DifferencePublication
+    argument 10 parameter alpha for models division2DifferenceTimeText
+    argument 11 parameter alpha for models division1And2
+    argument 12 parameter beta for models division1And2
+    argument 13 withPretext
 '''
 numpy.seterr(divide='ignore', invalid='ignore')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -623,7 +630,7 @@ with torch.no_grad():
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
         basisModel = verificationModelBaseBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
                                               evidenceRankerBasis,
-                                              labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices, domainWeights,
+                                              labelEmbeddingLayerBasis, labelMaskDomainBasis, domainIndices,
                                               domain)
         basisModel.loading_NeuralNetwork(sys.argv[1]).to(device)
         labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
@@ -636,7 +643,7 @@ with torch.no_grad():
         basisModel2 = verificationModelBaseBERT.verifactionModel(transformer, encoderMetadataBasis, instanceEncoderBasis,
                                                             evidenceRankerBasis,
                                                             labelEmbeddingLayerBasis, labelMaskDomainBasis,
-                                                            domainIndices, domainWeights,
+                                                            domainIndices,
                                                             domain)
         basisModel2.loading_NeuralNetwork(sys.argv[2]).to(device)
         labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
@@ -646,12 +653,12 @@ with torch.no_grad():
         labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTime75A = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
+        verificationModelTimeA = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
                                                              evidenceRankerTime,
                                                              labelEmbeddingLayerTime, labelMaskDomainTime,
-                                                             domainIndices, domainWeights,
-                                                             domain,0.75)
-        verificationModelTime75A.loading_NeuralNetwork(sys.argv[3]).to(device)
+                                                             domainIndices,
+                                                             domain,sys.argv[9])
+        verificationModelTimeA.loading_NeuralNetwork(sys.argv[3]).to(device)
         labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataTime = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTime = instanceEncoderBasis.instanceEncoder().to(device)
@@ -659,12 +666,12 @@ with torch.no_grad():
         labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTime75B = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
+        verificationModelTimeB = verificationPublicatie(transformer, encoderMetadataTime, instanceEncoderTime,
                                                           evidenceRankerTime,
                                                           labelEmbeddingLayerTime, labelMaskDomainTime,
-                                                          domainIndices, domainWeights,
-                                                          domain, 0.75)
-        verificationModelTime75B.loading_NeuralNetwork(sys.argv[4]).to(device)
+                                                          domainIndices,
+                                                          domain, sys.argv[9])
+        verificationModelTimeB.loading_NeuralNetwork(sys.argv[4]).to(device)
         labelEmbeddingLayerTimeText = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataTimeText = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTimeText = instanceEncoderBasis.instanceEncoder().to(device)
@@ -672,12 +679,12 @@ with torch.no_grad():
         labelMaskDomainTimeText = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTimetimeText10A = verificationTekst(transformer, encoderMetadataTimeText, instanceEncoderTimeText,
+        verificationModelTimetimeTextA = verificationTekst(transformer, encoderMetadataTimeText, instanceEncoderTimeText,
                                                           evidenceRankerTimeText,
                                                           labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
-                                                          domainIndices, domainWeights,
-                                                          domain, 0.10)
-        verificationModelTimetimeText10A.loading_NeuralNetwork(sys.argv[5]).to(device)
+                                                          domainIndices,
+                                                          domain, sys.argv[10],sys.argv[13])
+        verificationModelTimetimeTextA.loading_NeuralNetwork(sys.argv[5]).to(device)
         labelEmbeddingLayerTimeText = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataTimeText = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTimeText = instanceEncoderBasis.instanceEncoder().to(device)
@@ -685,12 +692,12 @@ with torch.no_grad():
         labelMaskDomainTimeText = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTimetimeText10B = verificationTekst(transformer, encoderMetadataTimeText, instanceEncoderTimeText,
+        verificationModelTimetimeTextB = verificationTekst(transformer, encoderMetadataTimeText, instanceEncoderTimeText,
                                                              evidenceRankerTimeText,
                                                              labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
-                                                             domainIndices, domainWeights,
-                                                             domain, 0.10)
-        verificationModelTimetimeText10B.loading_NeuralNetwork(sys.argv[6]).to(device)
+                                                             domainIndices,
+                                                             domain, sys.argv[10],sys.argv[13])
+        verificationModelTimetimeTextB.loading_NeuralNetwork(sys.argv[6]).to(device)
         labelEmbeddingLayerEverything = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataEverything = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderEverything = instanceEncoderBasis.instanceEncoder().to(device)
@@ -698,12 +705,12 @@ with torch.no_grad():
         labelMaskDomainEverything = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTimeEverything2020A = verificationEverything(transformer, encoderMetadataEverything, instanceEncoderEverything,
+        verificationModelTimeEverythingA = verificationEverything(transformer, encoderMetadataEverything, instanceEncoderEverything,
                                                              evidenceRankerEverything,
                                                              labelEmbeddingLayerEverything, labelMaskDomainEverything,
-                                                             domainIndices, domainWeights,
-                                                             domain, 0.20,0.20)
-        verificationModelTimeEverything2020A.loading_NeuralNetwork(sys.argv[7]).to(device)
+                                                             domainIndices,
+                                                             domain, sys.argv[11],sys.argv[12],sys.argv[13])
+        verificationModelTimeEverythingA.loading_NeuralNetwork(sys.argv[7]).to(device)
         labelEmbeddingLayerEverything = labelEmbeddingLayerBasis.labelEmbeddingLayer(2308, domainIndices)
         encoderMetadataEverything = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderEverything = instanceEncoderBasis.instanceEncoder().to(device)
@@ -711,18 +718,18 @@ with torch.no_grad():
         labelMaskDomainEverything = labelMaskDomainBasis.labelMaskDomain(2308, domainIndices, model[1],
                                                                          len(domainIndices[model[1]])).to(device)
         transformer = AutoModel.from_pretrained('sentence-transformers/all-distilroberta-v1').to(device)
-        verificationModelTimeEverything2020B = verificationEverything(transformer, encoderMetadataEverything,
+        verificationModelTimeEverythingB = verificationEverything(transformer, encoderMetadataEverything,
                                                                       instanceEncoderEverything,
                                                                       evidenceRankerEverything,
                                                                       labelEmbeddingLayerEverything,
                                                                       labelMaskDomainEverything,
-                                                                      domainIndices, domainWeights,
-                                                                      domain, 0.20, 0.20)
-        verificationModelTimeEverything2020B.loading_NeuralNetwork(sys.argv[8]).to(device)
+                                                                      domainIndices,
+                                                                      domain, sys.argv[11],sys.argv[12],sys.argv[13])
+        verificationModelTimeEverythingB.loading_NeuralNetwork(sys.argv[8]).to(device)
         basisModels = [basisModel,basisModel2]
-        referenceModels = [verificationModelTime75A,verificationModelTime75B]
-        modelstimeText = [verificationModelTimetimeText10A,verificationModelTimetimeText10B]
-        modelsEverything = [verificationModelTimeEverything2020A, verificationModelTimeEverything2020B]
+        referenceModels = [verificationModelTimeA,verificationModelTimeB]
+        modelstimeText = [verificationModelTimetimeTextA,verificationModelTimetimeTextB]
+        modelsEverything = [verificationModelTimeEverythingA, verificationModelTimeEverythingB]
         print("Done loading "+domain)
         spearmanDomain, standaardDomain, labelsAll, standaardAll, labelsDomain, standaardLabelDomain, numberEqual, \
         spearmanAlltimeText, standaardDomaintimeText, labelsDomaintimeText, standaardLabelDomaintimeText, \

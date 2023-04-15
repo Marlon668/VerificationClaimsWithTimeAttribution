@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader
 
 '''
 Calculate Spearman correlationCoefficient for an example x for the ranking of the evidences (experiment 1) and 
-the ranking of the labels (experiment 2) between (basis-U1),(basis-U2),(basis-U1EnU2),(U1-U2),(U1-U1EnU2),(U2-U1EnU2)
+the ranking of the labels (experiment 2) between (basis-U1),(basis-U2),(basis-U1AndU2),(U1-U2),(U1-U1AndU2),(U2-U1AndU2)
 '''
 def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
     pearonsEvidenceRanking = {}
@@ -66,6 +66,17 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                 rankB1 = [sorted(rankingB1,reverse=True).index(x)+1 for x in rankingB1]
                 labelB1 = [sorted(labelsDomainB1,reverse=True).index(x)+1 for x in labelsDomainB1]
                 labelsAllB1 = [sorted(labelsAllB1,reverse=True).index(x)+1 for x in labelsAllB1]
+                rankingB2, labelsAllB2, labelsDomainB2, allEqualB2 = basisModels[1].getRankingEvidencesLabels(
+                    data[1][i], data[2][i],
+                    metadata_encoding, domain)
+                if allEqualB2:
+                    if "Base2" in numberEqual[domain]:
+                        numberEqual[domain]["Base2"] += 1
+                    else:
+                        numberEqual[domain]["Base2"] = 1
+                rankB2 = [sorted(rankingB2, reverse=True).index(x) + 1 for x in rankingB2]
+                labelB2 = [sorted(labelsDomainB2, reverse=True).index(x) + 1 for x in labelsDomainB2]
+                labelsAllB2 = [sorted(labelsAllB2, reverse=True).index(x) + 1 for x in labelsAllB2]
                 rankingB3, labelsAllB3, labelsDomainB3, allEqualB3 = basisModels[2].getRankingEvidencesLabels(
                     data[1][i], data[2][i],
                     metadata_encoding, domain)
@@ -92,6 +103,9 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(rankB1,rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
+                    corref = stats.spearmanr(rankB2, rankM)[0]
+                    if not math.isnan(corref):
+                        spearmanRankEntry.append(corref)
                     corref = stats.spearmanr(rankB3, rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
@@ -99,11 +113,17 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(labelB1, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
+                    corref = stats.spearmanr(labelB2, labelM)[0]
+                    if not math.isnan(corref):
+                        labelsEntry.append(corref)
                     corref = stats.spearmanr(labelB3, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
                     labelsAllM = [sorted(labelsAllM, reverse=True).index(x) + 1 for x in labelsAllM]
                     corref = stats.spearmanr(labelsAllB1, labelsAllM)[0]
+                    if not math.isnan(corref):
+                        labelsAllEntry.append(corref)
+                    corref = stats.spearmanr(labelsAllB2, labelsAllM)[0]
                     if not math.isnan(corref):
                         labelsAllEntry.append(corref)
                     corref = stats.spearmanr(labelsAllB3, labelsAllM)[0]
@@ -131,7 +151,7 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "timeText"+str(index) in numberEqual[domain]:
                             numberEqual[domain]["timeText"+str(index)] += 1
@@ -142,6 +162,9 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(rankB1,rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
+                    corref = stats.spearmanr(rankB2, rankM)[0]
+                    if not math.isnan(corref):
+                        spearmanRankEntry.append(corref)
                     corref = stats.spearmanr(rankB3, rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
@@ -149,11 +172,17 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(labelB1, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
+                    corref = stats.spearmanr(labelB2, labelM)[0]
+                    if not math.isnan(corref):
+                        labelsEntry.append(corref)
                     corref = stats.spearmanr(labelB3, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
                     labelsAllM = [sorted(labelsAllM, reverse=True).index(x) + 1 for x in labelsAllM]
                     corref = stats.spearmanr(labelsAllB1, labelsAllM)[0]
+                    if not math.isnan(corref):
+                        labelsAllEntry.append(corref)
+                    corref = stats.spearmanr(labelsAllB2, labelsAllM)[0]
                     if not math.isnan(corref):
                         labelsAllEntry.append(corref)
                     corref = stats.spearmanr(labelsAllB3, labelsAllM)[0]
@@ -179,7 +208,7 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -190,6 +219,9 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(rankB1, rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
+                    corref = stats.spearmanr(rankB2, rankM)[0]
+                    if not math.isnan(corref):
+                        spearmanRankEntry.append(corref)
                     corref = stats.spearmanr(rankB3, rankM)[0]
                     if not math.isnan(corref):
                         spearmanRankEntry.append(corref)
@@ -197,11 +229,17 @@ def spearmanRanking(loaders,basisModels,models,timeTextModels,modelsEverything):
                     corref = stats.spearmanr(labelB1, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
+                    corref = stats.spearmanr(labelB2, labelM)[0]
+                    if not math.isnan(corref):
+                        labelsEntry.append(corref)
                     corref = stats.spearmanr(labelB3, labelM)[0]
                     if not math.isnan(corref):
                         labelsEntry.append(corref)
                     labelsAllM = [sorted(labelsAllM, reverse=True).index(x) + 1 for x in labelsAllM]
                     corref = stats.spearmanr(labelsAllB1, labelsAllM)[0]
+                    if not math.isnan(corref):
+                        labelsAllEntry.append(corref)
+                    corref = stats.spearmanr(labelsAllB2, labelsAllM)[0]
                     if not math.isnan(corref):
                         labelsAllEntry.append(corref)
                     corref = stats.spearmanr(labelsAllB3, labelsAllM)[0]
@@ -295,7 +333,7 @@ def spearmanRankingTime(loaders,basisModels,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][î])
                     if allEqualM:
                         if "timeText"+str(index) in numberEqual[domain]:
                             numberEqual[domain]["timeText"+str(index)] += 1
@@ -352,7 +390,7 @@ def spearmanRankingTime(loaders,basisModels,timeTextModels,modelsEverything):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -430,7 +468,7 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                     data[5][i], data[6][i],
                     data[7][i],
                     data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                    data[14][i], data[15][i], data[16][i])
+                    data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                 if allEqualB1:
                     if "timeText" in numberEqual[domain]:
                         numberEqual[domain]["timeText"] += 1
@@ -445,7 +483,7 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                     data[5][i], data[6][i],
                     data[7][i],
                     data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                    data[14][i], data[15][i], data[16][i])
+                    data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                 if allEqualB2:
                     if "timeText2" in numberEqual[domain]:
                         numberEqual[domain]["timeText2"] += 1
@@ -460,7 +498,7 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                     data[5][i], data[6][i],
                     data[7][i],
                     data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                    data[14][i], data[15][i], data[16][i])
+                    data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
                 if allEqualB3:
                     if "timeText3" in numberEqual[domain]:
                         numberEqual[domain]["timeText3"] += 1
@@ -490,7 +528,9 @@ def spearmanRankingtimeText(loaders, basisModels, modelsEverything):
                                                                                                      data[13][i],
                                                                                                      data[14][i],
                                                                                                      data[15][i],
-                                                                                                     data[16][i])
+                                                                                                     data[16][i],
+                                                                                                     data[17][i],
+                                                                                                     data[18][i])
                     if allEqualM:
                         if "everything" + str(index) in numberEqual[domain]:
                             numberEqual[domain]["everything" + str(index)] += 1
@@ -595,6 +635,11 @@ def getLabelIndicesDomain(domainPath,labelPath,weightsPath):
     argument 11 path of second model division1And2
     argument 12 path of third model division1And2
     argument 13 name of domain to take examples from to calculate spearmanCorrleationCoeeficient of evidence rankings and labelrankings
+    argument 14 parameter alpha for models division1DifferencePublication
+    argument 15 parameter alpha for models division2DifferenceTimeText
+    argument 16 parameter alpha for models division1And2
+    argument 17 parameter beta for models division1And2
+    argument 18 withPretext
 '''
 numpy.seterr(divide='ignore', invalid='ignore')
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -667,7 +712,7 @@ with torch.no_grad():
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,
-                                                             domainWeights, model[1]).to(device)
+                                                             model[1]).to(device)
         basisModel.loading_NeuralNetwork(sys.argv[1])
         labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
         encoderBasis = encoderBasis.encoder(300, 128).to(device)
@@ -680,7 +725,7 @@ with torch.no_grad():
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,
-                                                             domainWeights, model[1]).to(device)
+                                                             model[1]).to(device)
         basisModel2.loading_NeuralNetwork(sys.argv[2])
         labelEmbeddingLayerBasis = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
         encoderBasis = encoderBasis.encoder(300, 128).to(device)
@@ -693,149 +738,136 @@ with torch.no_grad():
                                                              evidenceRankerBasis,
                                                              labelEmbeddingLayerBasis, labelMaskDomainBasis,
                                                              domainIndices,
-                                                             domainWeights, model[1]).to(device)
+                                                             model[1]).to(device)
         basisModel3.loading_NeuralNetwork(sys.argv[3])
         labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTime = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderTime = encoderPublicatie(300, 128, sys.argv[14]).to(device)
         encoderMetadataTime = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTime = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTime = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                     len(domainIndices[model[1]])).to(device)
-        verificationModelTime90A = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
+        verificationModelTimeA = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
                                                              evidenceRankerTime,
                                                              labelEmbeddingLayerTime, labelMaskDomainTime,
                                                              domainIndices,
-                                                             domainWeights, model[1]).to(device)
-        verificationModelTime90A.loading_NeuralNetwork(sys.argv[4])
+                                                             model[1],sys.argv[14]).to(device)
+        verificationModelTimeA.loading_NeuralNetwork(sys.argv[4])
         labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTime = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderTime = encoderPublicatie(300, 128, sys.argv[14]).to(device)
         encoderMetadataTime = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTime = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTime = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
-        verificationModelTime90B = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
+        verificationModelTimeB = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
                                                           evidenceRankerTime,
                                                           labelEmbeddingLayerTime, labelMaskDomainTime,
                                                           domainIndices,
-                                                          domainWeights, model[1]).to(device)
-        verificationModelTime90B.loading_NeuralNetwork(sys.argv[5])
+                                                          model[1],sys.argv[14]).to(device)
+        verificationModelTimeB.loading_NeuralNetwork(sys.argv[5])
         labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTime = encoderPublicatie(300, 128, 0.9).to(device)
+        encoderTime = encoderPublicatie(300, 128, sys.argv[14]).to(device)
         encoderMetadataTime = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTime = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTime = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
-        verificationModelTime90C = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
+        verificationModelTimeC = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
                                                           evidenceRankerTime,
                                                           labelEmbeddingLayerTime, labelMaskDomainTime,
                                                           domainIndices,
-                                                          domainWeights, model[1]).to(device)
-        verificationModelTime90C.loading_NeuralNetwork(sys.argv[6])
-        labelEmbeddingLayerTime = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTime = encoderPublicatie(300, 128, 0.9).to(device)
-        encoderMetadataTime = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
-        instanceEncoderTime = instanceEncoderBasis.instanceEncoder().to(device)
-        evidenceRankerTime = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
-        labelMaskDomainTime = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
-                                                                   len(domainIndices[model[1]])).to(device)
-        verificationModelTime90C = verificationPublicatie(encoderTime, encoderMetadataTime, instanceEncoderTime,
-                                                          evidenceRankerTime,
-                                                          labelEmbeddingLayerTime, labelMaskDomainTime,
-                                                          domainIndices,
-                                                          domainWeights, model[1]).to(device)
-        verificationModelTime90C.loading_NeuralNetwork(sys.argv[6])
+                                                          model[1],sys.argv[14]).to(device)
+        verificationModelTimeC.loading_NeuralNetwork(sys.argv[6])
         labelEmbeddingLayerTimeText = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTimeText = encoderTekst(300, 128,0.25).to(device)
+        encoderTimeText = encoderTekst(300, 128,sys.argv[15]).to(device)
         encoderMetadataTimeText = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTimeText = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTimeText = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTimeText = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                    len(domainIndices[model[1]])).to(device)
-        verificationModelTimeText25A = verificationTekst(
+        verificationModelTimeTextA = verificationTekst(
             encoderTimeText, encoderMetadataTimeText, instanceEncoderTimeText,
             evidenceRankerTimeText,
             labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
-            domainIndices, domainWeights,
-            model[1]).to(device)
-        verificationModelTimeText25A.loading_NeuralNetwork(sys.argv[7])
+            domainIndices,
+            model[1],sys.argv[15],sys.argv[18]).to(device)
+        verificationModelTimeTextA.loading_NeuralNetwork(sys.argv[7])
         labelEmbeddingLayerTimeText = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTimeText = encoderTekst(300, 128, 0.25).to(device)
+        encoderTimeText = encoderTekst(300, 128, sys.argv[15]).to(device)
         encoderMetadataTimeText = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTimeText = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTimeText = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTimeText = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                        len(domainIndices[model[1]])).to(device)
-        verificationModelTimeText25B = verificationTekst(
+        verificationModelTimeTextB = verificationTekst(
             encoderTimeText, encoderMetadataTimeText, instanceEncoderTimeText,
             evidenceRankerTimeText,
             labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
-            domainIndices, domainWeights,
-            model[1]).to(device)
-        verificationModelTimeText25B.loading_NeuralNetwork(sys.argv[8])
+            domainIndices,
+            model[1],sys.argv[15],sys.argv[18]).to(device)
+        verificationModelTimeTextB.loading_NeuralNetwork(sys.argv[8])
         labelEmbeddingLayerTimeText = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderTimeText = encoderTekst(300, 128, 0.25).to(device)
+        encoderTimeText = encoderTekst(300, 128, sys.argv[15]).to(device)
         encoderMetadataTimeText = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderTimeText = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerTimeText = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainTimeText = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                        len(domainIndices[model[1]])).to(device)
-        verificationModelTimeText25C = verificationTekst(
+        verificationModelTimeTextC = verificationTekst(
             encoderTimeText, encoderMetadataTimeText, instanceEncoderTimeText,
             evidenceRankerTimeText,
             labelEmbeddingLayerTimeText, labelMaskDomainTimeText,
-            domainIndices, domainWeights,
-            model[1]).to(device)
-        verificationModelTimeText25C.loading_NeuralNetwork(sys.argv[9])
+            domainIndices,
+            model[1],sys.argv[15],sys.argv[18]).to(device)
+        verificationModelTimeTextC.loading_NeuralNetwork(sys.argv[9])
         labelEmbeddingLayerEverything = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderEverything = encoderEverything(300, 128, 0.2,0.4).to(device)
+        encoderEverything = encoderEverything(300, 128, sys.argv[16],sys.argv[17]).to(device)
         encoderMetadataEverything = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderEverything = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerEverything = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainEverything = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                        len(domainIndices[model[1]])).to(device)
-        verificationModelEverything2040A = verificationEverything(
+        verificationModelEverythingA = verificationEverything(
             encoderEverything, encoderMetadataEverything, instanceEncoderEverything,
             evidenceRankerEverything,
             labelEmbeddingLayerEverything, labelMaskDomainEverything,
-            domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
-        verificationModelEverything2040A.loading_NeuralNetwork(sys.argv[10])
+            domainIndices,
+            model[1], sys.argv[16],sys.argv[17],sys.argv[18]).to(device)
+        verificationModelEverythingA.loading_NeuralNetwork(sys.argv[10])
         labelEmbeddingLayerEverything = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderEverything = encoderEverything(300, 128, 0.2, 0.4).to(device)
+        encoderEverything = encoderEverything(300, 128, sys.argv[16],sys.argv[17]).to(device)
         encoderMetadataEverything = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderEverything = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerEverything = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainEverything = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                          len(domainIndices[model[1]])).to(device)
-        verificationModelEverything2040B = verificationEverything(
+        verificationModelEverythingB = verificationEverything(
             encoderEverything, encoderMetadataEverything, instanceEncoderEverything,
             evidenceRankerEverything,
             labelEmbeddingLayerEverything, labelMaskDomainEverything,
-            domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
-        verificationModelEverything2040B.loading_NeuralNetwork(sys.argv[11])
+            domainIndices,
+            model[1],sys.argv[16],sys.argv[17],sys.argv[18]).to(device)
+        verificationModelEverythingB.loading_NeuralNetwork(sys.argv[11])
         labelEmbeddingLayerEverything = labelEmbeddingLayerBasis.labelEmbeddingLayer(772, domainIndices)
-        encoderEverything = encoderEverything(300, 128, 0.2, 0.4).to(device)
+        encoderEverything = encoderEverything(300, 128, sys.argv[16],sys.argv[17]).to(device)
         encoderMetadataEverything = encoderMetadataBasis.encoderMetadata(3, 3, oneHotEncoderBasis).to(device)
         instanceEncoderEverything = instanceEncoderBasis.instanceEncoder().to(device)
         evidenceRankerEverything = evidence_rankerBasis.evidenceRanker(772, 100).to(device)
         labelMaskDomainEverything = labelMaskDomainBasis.labelMaskDomain(772, domainIndices, model[1],
                                                                          len(domainIndices[model[1]])).to(device)
-        verificationModelEverything2040C = verificationEverything(
+        verificationModelEverythingC = verificationEverything(
             encoderEverything, encoderMetadataEverything, instanceEncoderEverything,
             evidenceRankerEverything,
             labelEmbeddingLayerEverything, labelMaskDomainEverything,
-            domainIndices, domainWeights,
-            model[1], 0.2, 0.4).to(device)
-        verificationModelEverything2040C.loading_NeuralNetwork(sys.argv[12])
+            domainIndices,
+            model[1], sys.argv[16],sys.argv[17],sys.argv[18]).to(device)
+        verificationModelEverythingC.loading_NeuralNetwork(sys.argv[12])
         basisModels = [basisModel,basisModel2,basisModel3]
-        referenceModels = [verificationModelTime90A,verificationModelTime90B,verificationModelTime90C]
-        modelstimeText = [verificationModelTimeText25A,verificationModelTimeText25B,verificationModelTimeText25C]
-        modelsEverything = [verificationModelEverything2040A, verificationModelEverything2040B,
-                          verificationModelEverything2040C]
+        referenceModels = [verificationModelTimeA,verificationModelTimeB,verificationModelTimeC]
+        modelstimeText = [verificationModelTimeTextA,verificationModelTimeTextB,verificationModelTimeTextC]
+        modelsEverything = [verificationModelEverythingA, verificationModelEverythingB,
+                          verificationModelEverythingC]
         spearmanDomain,standaardDomain,labelsAll,standaardAll,labelsDomain,standaardLabelDomain,numberEqual, \
             spearmanAlltimeText, standaardDomaintimeText, labelsDomaintimeText, standaardLabelDomaintimeText, \
             labelsAlltimeText, standaardLabelAllDomaintimeText, spearmanAllEverything, standaardDomainEverything, \

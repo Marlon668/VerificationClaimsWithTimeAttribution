@@ -436,7 +436,7 @@ def train(batch,model,oneHotEncoder, optimizer,domainLabels,domainLabelIndices,d
         domain = batch[0][0].split('-')[0]
         prediction = model(batch[1][i], batch[2][i], metadata_encoding, domain,batch[5][i],batch[6][i],batch[7][i],
                            batch[8][i],batch[9][i],batch[10][i],batch[11][i],batch[12][i],batch[13][i],
-                           batch[14][i],batch[15][i],batch[16][i]).to(device)
+                           batch[14][i],batch[15][i],batch[16][i],batch[17][i],batch[18][i]).to(device)
         if predictionBatch.size()[0] == 0:
             predictionBatch = prediction.unsqueeze(0).to(device)
         else:

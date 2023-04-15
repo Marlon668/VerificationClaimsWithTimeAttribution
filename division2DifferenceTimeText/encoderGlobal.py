@@ -82,7 +82,7 @@ class encoder(nn.Module):
             return output
 
     def forwardAttribution(self, claim, date, positions, verbs, times, verschillenIndices, verschillenValues,
-                           isClaim=True):
+                           sizePretext=0,isClaim=True):
         encoded_input = self.tokenizer(claim, padding=True, truncation=False, return_tensors='pt').to(self.device)
         # tokens = [[i for i in self.tokenizer(claim)['input_ids'] if i not in {0,2,4}]]
         # tokens = torch.tensor(tokens).to(self.device)
@@ -116,7 +116,7 @@ class encoder(nn.Module):
         number = 0
         if verschillenIndices[0] != "":
             for i in range(len(verschillenIndices)):
-                if verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
+                if verschillenIndices[i] >= sizePretext and verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
                     if verschillenValues[i].isdigit():
                         time = self.verschil(torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(
                             self.device)
@@ -134,12 +134,12 @@ class encoder(nn.Module):
                    encodingClaim, times
 
     def addTime(self, claim, encoding, date, positions, verbs, times, verschillenIndices, verschillenValues,
-                isClaim=True):
+                sizePretext = 0, isClaim=True):
         tijdAbsolute = torch.zeros(2 * self.hidden_dim).squeeze(0).to(self.device)
         number = 0
         if verschillenIndices[0] != "":
             for i in range(len(verschillenIndices)):
-                if verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
+                if verschillenIndices[i] >= sizePretext and verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
                     if verschillenValues[i].isdigit():
                         tijdAbsolute += self.verschil(
                             torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(self.device)
@@ -152,11 +152,11 @@ class encoder(nn.Module):
             return encoding
 
     def getTimeEncodings(self, claim, encoding, date, positions, verbs, times, verschillenIndices, verschillenValues,
-                         isClaim=True):
+                         sizePretext = 0, isClaim=True):
         times = []
         if verschillenIndices[0] != "":
             for i in range(len(verschillenIndices)):
-                if verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
+                if verschillenIndices[i] >= sizePretext and verschillenValues[i].find('Duur') == -1 and verschillenValues[i].find('Refs') == -1:
                     if verschillenValues[i].isdigit():
                         times.append(self.verschil(
                             torch.tensor([int(verschillenValues[i])]).to(self.device)).squeeze(0).to(self.device))

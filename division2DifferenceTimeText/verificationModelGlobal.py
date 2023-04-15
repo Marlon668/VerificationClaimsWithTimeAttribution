@@ -31,7 +31,7 @@ Global version of extension 2: adding buckets of difference between time entitie
 '''
 class verifactionModel(nn.Module):
     # Create neural network
-    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha=0.25,withPreText=false):
+    def __init__(self,encoder,metadataEncoder,instanceEncoder,evidenceRanker,labelEmbedding,labelMaskDomain,labelDomains,domain,alpha=0.25,withPreText=False):
         super(verifactionModel, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.encoder = encoder

@@ -218,9 +218,7 @@ if __name__ == '__main__':
     domains = {sys.argv[2]}
     datas = []
     for domain in domains:
-        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                       pathToSave="test/time/dataset2/",
-                       domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
         dev_loader = DataLoader(test_set,
                                 batch_size=1,
                                 shuffle=False)
@@ -235,20 +233,20 @@ if __name__ == '__main__':
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, data[1],
                                                            len(domainIndices[data[1]])).to(device)
-        verificationModelTime90A = verificationPublication(encoderM, encoderMetadataM, instanceEncoderM,
+        verificationModelTime = verificationPublication(encoderM, encoderMetadataM, instanceEncoderM,
                                                                          evidenceRankerM,
                                                                          labelEmbeddingLayerM, labelMaskDomainM,
-                                                                         domainIndices, domainWeights,
-                                                                         data[1]).to(device)
-        verificationModelTime90A.loading_NeuralNetwork(sys.argv[1])
+                                                                         domainIndices,
+                                                                         data[1],sys.argv[3]).to(device)
+        verificationModelTime.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)
-            gradientsEncoding,gradientsTime, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, verificationModelTime90A)
+            gradientsEncoding,gradientsTime, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, verificationModelTime)
             with torch.no_grad():
-                inputs, metadata_encoding = getInputs(entry, verificationModelTime90A)
+                inputs, metadata_encoding = getInputs(entry, verificationModelTime)
                 label_index = domainLabelIndices[data[1]][domainLabels[data[1]].index(entry[4][0])]
             if predictedLabel != label_index:
-                attributionsEncoding,attributionsTime = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelTime90A, label_index,
+                attributionsEncoding,attributionsTime = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelTime, label_index,
                                                                     calculate_outputs_and_gradientsIntegrated, \
                                                                     steps=1000, num_random_trials=1)
                 print("Summation of the attributions encoding")

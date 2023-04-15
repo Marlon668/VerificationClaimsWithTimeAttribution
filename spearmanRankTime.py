@@ -300,7 +300,7 @@ with torch.no_grad():
         
         if len(pearsonDomain) > 0:
             print("Ranking Time")
-            print("Gemiddelde : " + model[1] + " : " + str(np.mean(pearsonDomain)))
+            print("Average : " + model[1] + " : " + str(np.mean(pearsonDomain)))
             print("Deviatie: " + model[1] + " : " + str(np.std(pearsonDomain)))
             print("Deviation under the models:: " + model[1] + " : " + str(np.mean(standaardDomain)))
         if len(labelsDomain) >0:

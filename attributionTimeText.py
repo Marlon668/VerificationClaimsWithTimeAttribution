@@ -76,7 +76,7 @@ def calculate_outputs_and_gradients(data, model):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
         output = F.softmax(output, dim=0)
         target_label_idx = torch.argmax(output).item()
         index = np.ones((1)) * target_label_idx
@@ -124,7 +124,7 @@ def getInputs(data, model):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
         invoer = [claim_encodingFull,claim_EncodingWithoutTime,times,evidenceEncodings]
     return invoer,metadata_encoding
 
@@ -249,6 +249,7 @@ if __name__ == '__main__':
     argument 1 path of model
     argument 2 name of domain to take examples from to calculate attribution
     argument 3 alpha
+    argument 4 withPretext
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -256,9 +257,7 @@ if __name__ == '__main__':
     domains = {sys.argv[2]}
     datas= []
     for domain in domains:
-        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                       pathToSave="test/time/dataset2/",
-                       domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
         dev_loader = DataLoader(test_set,
                                  batch_size=1,
                                  shuffle=False)
@@ -274,20 +273,20 @@ if __name__ == '__main__':
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, data[1],
                                                            len(domainIndices[data[1]])).to(device)
-        verificationModelTimeAdding25A = verificationText(
+        verificationModelTimeAdding = verificationText(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
-            domainIndices, domainWeights,
-            data[1]).to(device)
-        verificationModelTimeAdding25A.loading_NeuralNetwork(sys.argv[1])
+            domainIndices,
+            data[1],sys.argv[3],bool(sys.argv[5])).to(device)
+        verificationModelTimeAdding.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)
-            gradientsEncoding,gradientsTime, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, verificationModelTimeAdding25A)
+            gradientsEncoding,gradientsTime, predictedLabel,_,_ = calculate_outputs_and_gradients(entry, verificationModelTimeAdding)
             with torch.no_grad():
-                inputs, metadata_encoding = getInputs(entry, verificationModelTimeAdding25A)
+                inputs, metadata_encoding = getInputs(entry, verificationModelTimeAdding)
                 label_index = domainLabelIndices[data[1]][domainLabels[data[1]].index(entry[4][0])]
-            attributionsEncoding,attributionsTime = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelTimeAdding25A, label_index,
+            attributionsEncoding,attributionsTime = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelTimeAdding, label_index,
                                                                 calculate_outputs_and_gradientsIntegrated, \
                                                                 steps=1000, num_random_trials=1)
 

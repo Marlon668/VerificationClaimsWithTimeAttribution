@@ -90,7 +90,7 @@ def calculate_outputs_and_gradients(data, model):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
         output = F.softmax(output, dim=0)
         target_label_idx = torch.argmax(output).item()
         index = np.ones((1)) * target_label_idx
@@ -144,7 +144,7 @@ def getInputs(data, model):
                                                                                                      data[5][i], data[6][i],
                                                                                                      data[7][i],
                           data[8][i], data[9][i], data[10][i], data[11][i], data[12][i], data[13][i],
-                          data[14][i], data[15][i], data[16][i])
+                          data[14][i], data[15][i], data[16][i],data[17][i],data[18][i])
         print("Claim time")
         print(claimTime)
         invoer = [claim_encodingFull,claim_EncodingWithoutTime,claimTime,times,evidenceEncodings]
@@ -275,7 +275,7 @@ def integrated_gradients(inputs,metadata_encoding, model, target_label_idx, pred
     for i in range(len(inputs[4])):
         integrated_gradTimeVerschil.append((inputs[4][i][3].numpy() - baselineEvidence.numpy()) * avg_gradientsTimeVerschil[0][i + 1])
     print(avg_gradientsTimeVerschil)
-    print('int verschil')
+    print('int difference')
     print(len(inputs[4]))
     print(integrated_gradTimeVerschil)
     return integrated_gradEncoding,integrated_gradTime,integrated_gradTimeVerschil
@@ -297,6 +297,7 @@ if __name__ == '__main__':
     argument 2 name of domain to take examples from to calculate attribution
     argument 3 parameter alpha
     argument 4 parameter beta
+    argument 5 withPretext
     '''
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     domainIndices, domainLabels, domainLabelIndices, domainWeights = getLabelIndicesDomain(
@@ -304,9 +305,7 @@ if __name__ == '__main__':
     domains = {sys.argv[2]}
     datas = []
     for domain in domains:
-        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv',
-                       pathToSave="test/time/dataset2/",
-                       domain=domain)
+        test_set = NUS(mode='Test', path='test/test-' + domain + '.tsv', domain=domain)
         dev_loader = DataLoader(test_set,
                                 batch_size=1,
                                 shuffle=False)
@@ -321,22 +320,22 @@ if __name__ == '__main__':
         evidenceRankerM = evidence_ranker.evidenceRanker(772, 100).to(device)
         labelMaskDomainM = labelMaskDomain.labelMaskDomain(772, domainIndices, data[1],
                                                            len(domainIndices[data[1]])).to(device)
-        verificationModelEverything2040A= verificationEverything(
+        verificationModelEverything= verificationEverything(
             encoderM, encoderMetadataM, instanceEncoderM,
             evidenceRankerM,
             labelEmbeddingLayerM, labelMaskDomainM,
-            domainIndices, domainWeights,
-            data[1],sys.argv[3],sys.argv[4]).to(device)
-        verificationModelEverything2040A.loading_NeuralNetwork(sys.argv[1])
+            domainIndices,
+            data[1],sys.argv[3],sys.argv[4],bool(sys.argv[5])).to(device)
+        verificationModelEverything.loading_NeuralNetwork(sys.argv[1])
         for entry in data[0]:
             print(entry)
-            gradientsEncoding,gradientsTimeAbsolute,gradientsTimeVerschil, predictedLabel,_,_ = calculate_outputs_and_gradients(entry,verificationModelEverything2040A)
+            gradientsEncoding,gradientsTimeAbsolute,gradientsTimeVerschil, predictedLabel,_,_ = calculate_outputs_and_gradients(entry,verificationModelEverything)
             with torch.no_grad():
                 print("calculate")
-                inputs, metadata_encoding = getInputs(entry, verificationModelEverything2040A)
+                inputs, metadata_encoding = getInputs(entry, verificationModelEverything)
                 label_index = domainLabelIndices[data[1]][domainLabels[data[1]].index(entry[4][0])]
             if predictedLabel != label_index:
-                attributionsEncoding,attributionsTimeAbsolute,attributionTimeVerschil = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelEverything2040A, label_index,
+                attributionsEncoding,attributionsTimeAbsolute,attributionTimeVerschil = random_baseline_integrated_gradients(inputs,metadata_encoding, verificationModelEverything, label_index,
                                                                     calculate_outputs_and_gradientsIntegrated, \
                                                                     steps=2, num_random_trials=1)
                 print("Summation of the attributions encoding")
