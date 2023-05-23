@@ -47,8 +47,9 @@ class snippet:
         Divide them in durations, references, sets and datas
         Convert the datas to python datetime
     '''
+
     def readTime(self):
-        path = "ProcessedTimes" + "/" + self.claimID + "/" + self.number+".xml"
+        path = "ProcessedTimes" + "/" + self.claimID + "/" + self.number + ".xml"
         if os.path.exists(path):
             f = open(path, "r", encoding="utf-8")
             lines = f.readlines()
@@ -74,102 +75,107 @@ class snippet:
             tree = etree.parse(path, parser)
             root = tree.getroot()
             for depth in range(len(root)):
-                if(str(root[depth]).find('TIMEX3')) !=-1:
+                if (str(root[depth]).find('TIMEX3')) != -1:
                     if root[depth].attrib['type'] == "DURATION":
                         duren.add(root[depth].attrib['value'])
-                        datas[indices[depth]] = [root[depth].attrib['value'],root[depth].text.strip()]
+                        datas[indices[depth]] = [root[depth].attrib['value'], root[depth].text.strip()]
                     else:
                         if root[depth].attrib['value'].find('REF') != -1:
                             refs.add(root[depth].attrib['value'])
-                            datas[indices[depth]] = [root[depth].attrib['value'],root[depth].text.strip()]
+                            datas[indices[depth]] = [root[depth].attrib['value'], root[depth].text.strip()]
                         else:
                             if root[depth].attrib['type'] == 'SET':
                                 sets.add(root[depth].attrib['value'])
-                                datas[indices[depth]] = [root[depth].attrib['value'],root[depth].text.strip()]
+                                datas[indices[depth]] = [root[depth].attrib['value'], root[depth].text.strip()]
                             else:
-                                if root[depth].attrib['value'].find('W') != -1 and root[depth].attrib['value'].find('WI') == -1:
-                                    if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                        if root[depth].attrib['value'].split('-')[-1] =='WE':
-                                            datas[indices[depth]] = [tuple(
-                                                [datetime.datetime.strptime(
-                                                    root[depth].attrib['value'].replace('-WE', '') + '-5',
-                                                    "%Y-W%W-%w"),
-                                                 datetime.datetime.strptime(
-                                                     root[depth].attrib['value'].replace('-WE', '') + '-6',
-                                                     "%Y-W%W-%w")]),root[depth].text.strip()]
-                                        else:
-                                            datas[indices[depth]] = [tuple(
-                                                [datetime.datetime.strptime(root[depth].attrib['value'] + '-1',
-                                                                            "%Y-W%W-%w"),
-                                                 datetime.datetime.strptime(root[depth].attrib['value'] + '-6',
-                                                                            "%Y-W%W-%w")]),root[depth].text.strip()]
-                                else:
-                                    if root[depth].attrib['value'].find('SU') != -1:
+                                try:
+                                    if root[depth].attrib['value'].find('W') != -1 and root[depth].attrib['value'].find(
+                                            'WI') == -1:
                                         if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                            dateB = root[depth].attrib['value'].split('-')[0] + '-' + '06-21'
-                                            dateE = root[depth].attrib['value'].split('-')[0] + '-' + '09-20'
-                                            datas[indices[depth]] = [tuple(
-                                                [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
-                                                 datetime.datetime.strptime(dateE, '%Y-%m-%d')]),root[depth].text.strip()]
+                                            if root[depth].attrib['value'].split('-')[-1] == 'WE':
+                                                datas[indices[depth]] = [tuple(
+                                                    [datetime.datetime.strptime(
+                                                        root[depth].attrib['value'].replace('-WE', '') + '-5',
+                                                        "%Y-W%W-%w"),
+                                                        datetime.datetime.strptime(
+                                                            root[depth].attrib['value'].replace('-WE', '') + '-6',
+                                                            "%Y-W%W-%w")]), root[depth].text.strip()]
+                                            else:
+                                                datas[indices[depth]] = [tuple(
+                                                    [datetime.datetime.strptime(root[depth].attrib['value'] + '-1',
+                                                                                "%Y-W%W-%w"),
+                                                     datetime.datetime.strptime(root[depth].attrib['value'] + '-6',
+                                                                                "%Y-W%W-%w")]),
+                                                    root[depth].text.strip()]
                                     else:
-                                        if root[depth].attrib['value'].find('WI') != -1:
+                                        if root[depth].attrib['value'].find('SU') != -1:
                                             if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                                dateB = root[depth].attrib['value'].split('-')[0] + '-' + '12-21'
-                                                dateE = str(int(root[depth].attrib['value'].split('-')[0])+1) + '-' + '03-20'
+                                                dateB = root[depth].attrib['value'].split('-')[0] + '-' + '06-21'
+                                                dateE = root[depth].attrib['value'].split('-')[0] + '-' + '09-20'
                                                 datas[indices[depth]] = [tuple(
                                                     [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
                                                      datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
                                                     root[depth].text.strip()]
                                         else:
-                                            if root[depth].attrib['value'].find('FA') != -1:
+                                            if root[depth].attrib['value'].find('WI') != -1:
                                                 if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                                    dateB = root[depth].attrib['value'].split('-')[0] + '-' + '09-21'
-                                                    dateE = str(
-                                                        int(root[depth].attrib['value'].split('-')[0]) + 1) + '-' + '12-20'
+                                                    dateB = root[depth].attrib['value'].split('-')[0] + '-' + '12-21'
+                                                    dateE = str(int(
+                                                        root[depth].attrib['value'].split('-')[0]) + 1) + '-' + '03-20'
                                                     datas[indices[depth]] = [tuple(
                                                         [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
                                                          datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
                                                         root[depth].text.strip()]
                                             else:
-                                                if root[depth].attrib['value'].find('SP') != -1:
+                                                if root[depth].attrib['value'].find('FA') != -1:
                                                     if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                                        dateB = root[depth].attrib['value'].split('-')[0] + '-' + '03-21'
+                                                        dateB = root[depth].attrib['value'].split('-')[
+                                                                    0] + '-' + '09-21'
                                                         dateE = str(
                                                             int(root[depth].attrib['value'].split('-')[
-                                                                    0]) + 1) + '-' + '06-20'
+                                                                    0]) + 1) + '-' + '12-20'
                                                         datas[indices[depth]] = [tuple(
                                                             [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
                                                              datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
                                                             root[depth].text.strip()]
                                                 else:
-                                                    if root[depth].attrib['value'].find(':') == -1:
-                                                        if len(root[depth].attrib['value']) == 7:
-                                                            # print('Claim ' + self.claimID)
-                                                            if root[depth].attrib['value'].split('-')[0] != 'XXXX':
-                                                                if root[depth].attrib['value'].split('-')[1]=='H1':
-                                                                    dateB = root[depth].attrib['value'].split('-')[0] +'-01-01'
-                                                                    dateE = root[depth].attrib['value'].split('-')[0] + '-06-30'
-                                                                    datas[indices[depth]] = [tuple(
-                                                                        [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
-                                                                         datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
-                                                                        root[depth].text.strip()]
-                                                                else:
-                                                                    if root[depth].attrib['value'].split('-')[1]=='H2':
-                                                                        dateB = root[depth].attrib['value'].split('-')[0]+'-07-01'
-                                                                        dateE = root[depth].attrib['value'].split('-')[0]+'-12-31'
+                                                    if root[depth].attrib['value'].find('SP') != -1:
+                                                        if root[depth].attrib['value'].split('-')[0] != 'XXXX':
+                                                            dateB = root[depth].attrib['value'].split('-')[
+                                                                        0] + '-' + '03-21'
+                                                            dateE = str(
+                                                                int(root[depth].attrib['value'].split('-')[
+                                                                        0]) + 1) + '-' + '06-20'
+                                                            datas[indices[depth]] = [tuple(
+                                                                [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
+                                                                 datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
+                                                                root[depth].text.strip()]
+                                                    else:
+                                                        if root[depth].attrib['value'].find(':') == -1:
+                                                            if len(root[depth].attrib['value']) == 7:
+                                                                # print('Claim ' + self.claimID)
+                                                                if root[depth].attrib['value'].split('-')[0] != 'XXXX':
+                                                                    if root[depth].attrib['value'].split('-')[
+                                                                        1] == 'H1':
+                                                                        dateB = root[depth].attrib['value'].split('-')[
+                                                                                    0] + '-01-01'
+                                                                        dateE = root[depth].attrib['value'].split('-')[
+                                                                                    0] + '-06-30'
                                                                         datas[indices[depth]] = [tuple(
-                                                                            [datetime.datetime.strptime(dateB, '%Y-%m-%d'),
-                                                                             datetime.datetime.strptime(dateE, '%Y-%m-%d')]),
+                                                                            [datetime.datetime.strptime(dateB,
+                                                                                                        '%Y-%m-%d'),
+                                                                             datetime.datetime.strptime(dateE,
+                                                                                                        '%Y-%m-%d')]),
                                                                             root[depth].text.strip()]
                                                                     else:
                                                                         if root[depth].attrib['value'].split('-')[
-                                                                            1] == 'Q1':
+                                                                            1] == 'H2':
                                                                             dateB = \
                                                                             root[depth].attrib['value'].split('-')[
-                                                                                0] + '-01-01'
+                                                                                0] + '-07-01'
                                                                             dateE = \
                                                                             root[depth].attrib['value'].split('-')[
-                                                                                0] + '-03-31'
+                                                                                0] + '-12-31'
                                                                             datas[indices[depth]] = [tuple(
                                                                                 [datetime.datetime.strptime(dateB,
                                                                                                             '%Y-%m-%d'),
@@ -178,15 +184,15 @@ class snippet:
                                                                                 root[depth].text.strip()]
                                                                         else:
                                                                             if root[depth].attrib['value'].split('-')[
-                                                                                1] == 'Q2':
+                                                                                1] == 'Q1':
                                                                                 dateB = \
                                                                                     root[depth].attrib['value'].split(
                                                                                         '-')[
-                                                                                        0] + '-04-01'
+                                                                                        0] + '-01-01'
                                                                                 dateE = \
                                                                                     root[depth].attrib['value'].split(
                                                                                         '-')[
-                                                                                        0] + '-06-30'
+                                                                                        0] + '-03-31'
                                                                                 datas[indices[depth]] = [tuple(
                                                                                     [datetime.datetime.strptime(dateB,
                                                                                                                 '%Y-%m-%d'),
@@ -196,17 +202,17 @@ class snippet:
                                                                             else:
                                                                                 if \
                                                                                 root[depth].attrib['value'].split('-')[
-                                                                                    1] == 'Q3':
+                                                                                    1] == 'Q2':
                                                                                     dateB = \
                                                                                         root[depth].attrib[
                                                                                             'value'].split(
                                                                                             '-')[
-                                                                                            0] + '-07-01'
+                                                                                            0] + '-04-01'
                                                                                     dateE = \
                                                                                         root[depth].attrib[
                                                                                             'value'].split(
                                                                                             '-')[
-                                                                                            0] + '-09-30'
+                                                                                            0] + '-06-30'
                                                                                     datas[indices[depth]] = [tuple(
                                                                                         [datetime.datetime.strptime(
                                                                                             dateB,
@@ -216,71 +222,20 @@ class snippet:
                                                                                              '%Y-%m-%d')]),
                                                                                         root[depth].text.strip()]
                                                                                 else:
-                                                                                    if root[depth].attrib['value'].split('-')[
-                                                                                    1] == 'Q4':
+                                                                                    if \
+                                                                                            root[depth].attrib[
+                                                                                                'value'].split('-')[
+                                                                                                1] == 'Q3':
                                                                                         dateB = \
                                                                                             root[depth].attrib[
                                                                                                 'value'].split(
                                                                                                 '-')[
-                                                                                                0] + '-10-01'
+                                                                                                0] + '-07-01'
                                                                                         dateE = \
                                                                                             root[depth].attrib[
                                                                                                 'value'].split(
                                                                                                 '-')[
-                                                                                                0] + '-12-31'
-                                                                                        datas[indices[depth]] = [tuple(
-                                                                                            [datetime.datetime.strptime(
-                                                                                                dateB,
-                                                                                                '%Y-%m-%d'),
-                                                                                             datetime.datetime.strptime(
-                                                                                                 dateE,
-                                                                                                 '%Y-%m-%d')]),
-                                                                                            root[depth].text.strip()]
-                                                                                    else:
-                                                                                        datas[indices[depth]] = [datetime.datetime.strptime(
-                                                                                            root[depth].attrib['value'], '%Y-%m'),
-                                                                                            root[depth].text.strip()]
-                                                        else:
-                                                            if len(root[depth].attrib['value'][1: ].split('-')) == 1:
-                                                                # print('Claim ' + self.claimID)
-                                                                if len(root[depth].attrib['value'])<4 and(root[depth].attrib['value'][0:2] == '19' or root[depth].attrib['value'][0:2]=='20' or root[depth].attrib['value'][0:2]=='18') :
-                                                                    date = root[depth].attrib['value']
-                                                                    while len(date)!=4:
-                                                                        date = date + '0'
-                                                                    datas[indices[depth]] = [datetime.datetime.strptime(str(max(int(date),int(datetime.MINYEAR))), '%Y'),root[depth].text.strip()]
-                                                                else:
-                                                                    if root[depth].attrib['value'].split('-')[0].find('XX') == -1:
-                                                                        if not root[depth].attrib['value'].isdigit():
-                                                                            dateB = root[depth].attrib['value'][0:3]+'0-01-01'
-                                                                            dateE = root[depth].attrib['value'][0:3]+'9-12-31'
-                                                                            datas[indices[depth]] = [tuple(
-                                                                                [datetime.datetime.strptime(
-                                                                                    dateB,
-                                                                                    '%Y-%m-%d'),
-                                                                                    datetime.datetime.strptime(
-                                                                                        dateE,
-                                                                                        '%Y-%m-%d')]),
-                                                                                root[depth].text.strip()]
-                                                                        else:
-                                                                            if int(datetime.MINYEAR)>int(root[depth].attrib['value']):
-                                                                                datas[indices[depth]] = [datetime.datetime.strptime(str(1000)
-                                                                                    , '%Y').replace(year=1),root[depth].text.strip()]
-                                                                            else:
-                                                                                if root[depth].attrib['value'] == '16':
-                                                                                    dateB = '1600-01-01'
-                                                                                    dateE = '1699-12-31'
-                                                                                    datas[indices[depth]] = [tuple(
-                                                                                        [datetime.datetime.strptime(
-                                                                                            dateB,
-                                                                                            '%Y-%m-%d'),
-                                                                                            datetime.datetime.strptime(
-                                                                                                dateE,
-                                                                                                '%Y-%m-%d')]),
-                                                                                        root[depth].text.strip()]
-                                                                                else:
-                                                                                    if root[depth].attrib['value'] == '17':
-                                                                                        dateB = '1700-01-01'
-                                                                                        dateE = '1799-12-31'
+                                                                                                0] + '-09-30'
                                                                                         datas[indices[depth]] = [tuple(
                                                                                             [datetime.datetime.strptime(
                                                                                                 dateB,
@@ -290,37 +245,115 @@ class snippet:
                                                                                                     '%Y-%m-%d')]),
                                                                                             root[depth].text.strip()]
                                                                                     else:
-                                                                                        if root[depth].attrib['value'] == '15':
-                                                                                            dateB = '1500-01-01'
-                                                                                            dateE = '1599-12-31'
-                                                                                            datas[indices[depth]] = [tuple(
-                                                                                                [datetime.datetime.strptime(
-                                                                                                    dateB,
-                                                                                                    '%Y-%m-%d'),
-                                                                                                    datetime.datetime.strptime(
-                                                                                                        dateE,
-                                                                                                        '%Y-%m-%d')]),
-                                                                                                root[depth].text.strip()]
-                                                                                        else:
-                                                                                            if root[depth].attrib[
-                                                                                                'value'] == '18':
-                                                                                                dateB = '1800-01-01'
-                                                                                                dateE = '1899-12-31'
-                                                                                                datas[indices[depth]] = [tuple(
-                                                                                                    [datetime.datetime.strptime(
-                                                                                                        dateB,
-                                                                                                        '%Y-%m-%d'),
+                                                                                        if root[depth].attrib[
+                                                                                            'value'].split('-')[
+                                                                                            1] == 'Q4':
+                                                                                            dateB = \
+                                                                                                root[depth].attrib[
+                                                                                                    'value'].split(
+                                                                                                    '-')[
+                                                                                                    0] + '-10-01'
+                                                                                            dateE = \
+                                                                                                root[depth].attrib[
+                                                                                                    'value'].split(
+                                                                                                    '-')[
+                                                                                                    0] + '-12-31'
+                                                                                            datas[indices[depth]] = [
+                                                                                                tuple(
+                                                                                                    [
+                                                                                                        datetime.datetime.strptime(
+                                                                                                            dateB,
+                                                                                                            '%Y-%m-%d'),
                                                                                                         datetime.datetime.strptime(
                                                                                                             dateE,
                                                                                                             '%Y-%m-%d')]),
-                                                                                                    root[depth].text.strip()]
-                                                                                            else:
-                                                                                                if root[depth].attrib[
-                                                                                                    'value'] == '13':
-                                                                                                    dateB = '1300-01-01'
-                                                                                                    dateE = '1399-12-31'
-                                                                                                    datas[
-                                                                                                        indices[depth]] = [tuple(
+                                                                                                root[
+                                                                                                    depth].text.strip()]
+                                                                                        else:
+                                                                                            datas[indices[depth]] = [
+                                                                                                datetime.datetime.strptime(
+                                                                                                    root[depth].attrib[
+                                                                                                        'value'],
+                                                                                                    '%Y-%m'),
+                                                                                                root[
+                                                                                                    depth].text.strip()]
+                                                            else:
+                                                                if len(root[depth].attrib['value'][1:].split('-')) == 1:
+                                                                    # print('Claim ' + self.claimID)
+                                                                    if len(root[depth].attrib['value']) < 4 and (
+                                                                            root[depth].attrib['value'][0:2] == '19' or
+                                                                            root[depth].attrib['value'][0:2] == '20' or
+                                                                            root[depth].attrib['value'][0:2] == '18'):
+                                                                        date = root[depth].attrib['value']
+                                                                        while len(date) != 4:
+                                                                            date = date + '0'
+                                                                        datas[indices[depth]] = [
+                                                                            datetime.datetime.strptime(
+                                                                                str(max(int(date),
+                                                                                        int(datetime.MINYEAR))), '%Y'),
+                                                                            root[depth].text.strip()]
+                                                                    else:
+                                                                        if root[depth].attrib['value'].split('-')[
+                                                                            0].find('XX') == -1:
+                                                                            if not root[depth].attrib[
+                                                                                'value'].isdigit():
+                                                                                dateB = root[depth].attrib['value'][
+                                                                                        0:3] + '0-01-01'
+                                                                                dateE = root[depth].attrib['value'][
+                                                                                        0:3] + '9-12-31'
+                                                                                datas[indices[depth]] = [tuple(
+                                                                                    [datetime.datetime.strptime(
+                                                                                        dateB,
+                                                                                        '%Y-%m-%d'),
+                                                                                        datetime.datetime.strptime(
+                                                                                            dateE,
+                                                                                            '%Y-%m-%d')]),
+                                                                                    root[depth].text.strip()]
+                                                                            else:
+                                                                                if int(datetime.MINYEAR) > int(
+                                                                                        root[depth].attrib['value']):
+                                                                                    datas[indices[depth]] = [
+                                                                                        datetime.datetime.strptime(
+                                                                                            str(1000)
+                                                                                            , '%Y').replace(year=1),
+                                                                                        root[depth].text.strip()]
+                                                                                else:
+                                                                                    if root[depth].attrib[
+                                                                                        'value'] == '16':
+                                                                                        dateB = '1600-01-01'
+                                                                                        dateE = '1699-12-31'
+                                                                                        datas[indices[depth]] = [tuple(
+                                                                                            [datetime.datetime.strptime(
+                                                                                                dateB,
+                                                                                                '%Y-%m-%d'),
+                                                                                                datetime.datetime.strptime(
+                                                                                                    dateE,
+                                                                                                    '%Y-%m-%d')]),
+                                                                                            root[depth].text.strip()]
+                                                                                    else:
+                                                                                        if root[depth].attrib[
+                                                                                            'value'] == '17':
+                                                                                            dateB = '1700-01-01'
+                                                                                            dateE = '1799-12-31'
+                                                                                            datas[indices[depth]] = [
+                                                                                                tuple(
+                                                                                                    [
+                                                                                                        datetime.datetime.strptime(
+                                                                                                            dateB,
+                                                                                                            '%Y-%m-%d'),
+                                                                                                        datetime.datetime.strptime(
+                                                                                                            dateE,
+                                                                                                            '%Y-%m-%d')]),
+                                                                                                root[
+                                                                                                    depth].text.strip()]
+                                                                                        else:
+                                                                                            if root[depth].attrib[
+                                                                                                'value'] == '15':
+                                                                                                dateB = '1500-01-01'
+                                                                                                dateE = '1599-12-31'
+                                                                                                datas[
+                                                                                                    indices[depth]] = [
+                                                                                                    tuple(
                                                                                                         [
                                                                                                             datetime.datetime.strptime(
                                                                                                                 dateB,
@@ -328,16 +361,16 @@ class snippet:
                                                                                                             datetime.datetime.strptime(
                                                                                                                 dateE,
                                                                                                                 '%Y-%m-%d')]),
-                                                                                                        root[
-                                                                                                            depth].text.strip()]
-                                                                                                else:
-                                                                                                    if root[depth].attrib[
-                                                                                                        'value'] == '15':
-                                                                                                        dateB = '1500-01-01'
-                                                                                                        dateE = '1599-12-31'
-                                                                                                        datas[
-                                                                                                            indices[
-                                                                                                                depth]] = [tuple(
+                                                                                                    root[
+                                                                                                        depth].text.strip()]
+                                                                                            else:
+                                                                                                if root[depth].attrib[
+                                                                                                    'value'] == '18':
+                                                                                                    dateB = '1800-01-01'
+                                                                                                    dateE = '1899-12-31'
+                                                                                                    datas[indices[
+                                                                                                        depth]] = [
+                                                                                                        tuple(
                                                                                                             [
                                                                                                                 datetime.datetime.strptime(
                                                                                                                     dateB,
@@ -345,132 +378,215 @@ class snippet:
                                                                                                                 datetime.datetime.strptime(
                                                                                                                     dateE,
                                                                                                                     '%Y-%m-%d')]),
+                                                                                                        root[
+                                                                                                            depth].text.strip()]
+                                                                                                else:
+                                                                                                    if \
+                                                                                                    root[depth].attrib[
+                                                                                                        'value'] == '13':
+                                                                                                        dateB = '1300-01-01'
+                                                                                                        dateE = '1399-12-31'
+                                                                                                        datas[
+                                                                                                            indices[
+                                                                                                                depth]] = [
+                                                                                                            tuple(
+                                                                                                                [
+                                                                                                                    datetime.datetime.strptime(
+                                                                                                                        dateB,
+                                                                                                                        '%Y-%m-%d'),
+                                                                                                                    datetime.datetime.strptime(
+                                                                                                                        dateE,
+                                                                                                                        '%Y-%m-%d')]),
                                                                                                             root[
                                                                                                                 depth].text.strip()]
                                                                                                     else:
-                                                                                                        if root[depth].attrib[
-                                                                                                            'value'] == '03':
-                                                                                                            dateB = '3000-01-01'
-                                                                                                            dateE = '3999-12-31'
-                                                                                                            datas[indices[depth]] = [tuple(
-                                                                                                                [datetime.datetime.strptime(
-                                                                                                                    dateB,
-                                                                                                                    '%Y-%m-%d').replace(year=300),
-                                                                                                                    datetime.datetime.strptime(
-                                                                                                                        dateE,
-                                                                                                                        '%Y-%m-%d').replace(year=399)]),
-                                                                                                                root[
-                                                                                                                    depth].text.strip()]
-                                                                                                        else:
-                                                                                                            if \
-                                                                                                            root[depth].attrib[
-                                                                                                                'value'] == '01':
-                                                                                                                dateB = '3000-01-01'
-                                                                                                                dateE = '3999-12-31'
-                                                                                                                datas[indices[
-                                                                                                                    depth]] = [tuple(
+                                                                                                        if root[
+                                                                                                            depth].attrib[
+                                                                                                            'value'] == '15':
+                                                                                                            dateB = '1500-01-01'
+                                                                                                            dateE = '1599-12-31'
+                                                                                                            datas[
+                                                                                                                indices[
+                                                                                                                    depth]] = [
+                                                                                                                tuple(
                                                                                                                     [
                                                                                                                         datetime.datetime.strptime(
                                                                                                                             dateB,
-                                                                                                                            '%Y-%m-%d').replace(
-                                                                                                                            year=100),
+                                                                                                                            '%Y-%m-%d'),
                                                                                                                         datetime.datetime.strptime(
                                                                                                                             dateE,
-                                                                                                                            '%Y-%m-%d').replace(
-                                                                                                                            year=199)]),root[depth].text.strip()]
-                                                                                                            else:
-                                                                                                                if \
-                                                                                                                        root[
-                                                                                                                            depth].attrib[
-                                                                                                                            'value'] == '06':
-                                                                                                                    dateB = '6000-01-01'
-                                                                                                                    dateE = '6999-12-31'
-                                                                                                                    datas[
-                                                                                                                        indices[
-                                                                                                                            depth]] = [tuple(
+                                                                                                                            '%Y-%m-%d')]),
+                                                                                                                root[
+                                                                                                                    depth].text.strip()]
+                                                                                                        else:
+                                                                                                            if root[
+                                                                                                                depth].attrib[
+                                                                                                                'value'] == '03':
+                                                                                                                dateB = '3000-01-01'
+                                                                                                                dateE = '3999-12-31'
+                                                                                                                datas[
+                                                                                                                    indices[
+                                                                                                                        depth]] = [
+                                                                                                                    tuple(
                                                                                                                         [
                                                                                                                             datetime.datetime.strptime(
                                                                                                                                 dateB,
                                                                                                                                 '%Y-%m-%d').replace(
-                                                                                                                                year=600),
+                                                                                                                                year=300),
                                                                                                                             datetime.datetime.strptime(
                                                                                                                                 dateE,
                                                                                                                                 '%Y-%m-%d').replace(
-                                                                                                                                year=699)]),root[depth].text.strip()]
+                                                                                                                                year=399)]),
+                                                                                                                    root[
+                                                                                                                        depth].text.strip()]
+                                                                                                            else:
+                                                                                                                if \
+                                                                                                                        root[
+                                                                                                                            depth].attrib[
+                                                                                                                            'value'] == '01':
+                                                                                                                    dateB = '3000-01-01'
+                                                                                                                    dateE = '3999-12-31'
+                                                                                                                    datas[
+                                                                                                                        indices[
+                                                                                                                            depth]] = [
+                                                                                                                        tuple(
+                                                                                                                            [
+                                                                                                                                datetime.datetime.strptime(
+                                                                                                                                    dateB,
+                                                                                                                                    '%Y-%m-%d').replace(
+                                                                                                                                    year=100),
+                                                                                                                                datetime.datetime.strptime(
+                                                                                                                                    dateE,
+                                                                                                                                    '%Y-%m-%d').replace(
+                                                                                                                                    year=199)]),
+                                                                                                                        root[
+                                                                                                                            depth].text.strip()]
                                                                                                                 else:
                                                                                                                     if \
                                                                                                                             root[
                                                                                                                                 depth].attrib[
-                                                                                                                                'value'] == '21':
-                                                                                                                        dateB = '2100-01-01'
-                                                                                                                        dateE = '2199-12-31'
+                                                                                                                                'value'] == '06':
+                                                                                                                        dateB = '6000-01-01'
+                                                                                                                        dateE = '6999-12-31'
                                                                                                                         datas[
                                                                                                                             indices[
-                                                                                                                                depth]] = [tuple(
-                                                                                                                            [
-                                                                                                                                datetime.datetime.strptime(
-                                                                                                                                    dateB,
-                                                                                                                                    '%Y-%m-%d'),
-                                                                                                                                datetime.datetime.strptime(
-                                                                                                                                    dateE,
-                                                                                                                                    '%Y-%m-%d')]),
+                                                                                                                                depth]] = [
+                                                                                                                            tuple(
+                                                                                                                                [
+                                                                                                                                    datetime.datetime.strptime(
+                                                                                                                                        dateB,
+                                                                                                                                        '%Y-%m-%d').replace(
+                                                                                                                                        year=600),
+                                                                                                                                    datetime.datetime.strptime(
+                                                                                                                                        dateE,
+                                                                                                                                        '%Y-%m-%d').replace(
+                                                                                                                                        year=699)]),
                                                                                                                             root[
                                                                                                                                 depth].text.strip()]
                                                                                                                     else:
                                                                                                                         if \
                                                                                                                                 root[
                                                                                                                                     depth].attrib[
-                                                                                                                                    'value'] == '02':
+                                                                                                                                    'value'] == '21':
                                                                                                                             dateB = '2100-01-01'
                                                                                                                             dateE = '2199-12-31'
                                                                                                                             datas[
                                                                                                                                 indices[
-                                                                                                                                    depth]] = [tuple(
-                                                                                                                                [
-                                                                                                                                    datetime.datetime.strptime(
-                                                                                                                                        dateB,
-                                                                                                                                        '%Y-%m-%d').replace(
-                                                                                                                                year=200),
-                                                                                                                                    datetime.datetime.strptime(
-                                                                                                                                        dateE,
-                                                                                                                                        '%Y-%m-%d').replace(
-                                                                                                                                year=299)]),
+                                                                                                                                    depth]] = [
+                                                                                                                                tuple(
+                                                                                                                                    [
+                                                                                                                                        datetime.datetime.strptime(
+                                                                                                                                            dateB,
+                                                                                                                                            '%Y-%m-%d'),
+                                                                                                                                        datetime.datetime.strptime(
+                                                                                                                                            dateE,
+                                                                                                                                            '%Y-%m-%d')]),
                                                                                                                                 root[
                                                                                                                                     depth].text.strip()]
                                                                                                                         else:
-                                                                                                                            dateB = \
-                                                                                                                            root[depth].attrib['value'].split('-')[
-                                                                                                                                0] + '-01-01'
-                                                                                                                            dateE = \
-                                                                                                                            root[depth].attrib['value'].split('-')[
-                                                                                                                                0] + '-12-31'
-                                                                                                                            datas[indices[depth]] = [tuple(
-                                                                                                                                [datetime.datetime.strptime(dateB,
-                                                                                                                                                            '%Y-%m-%d'),
-                                                                                                                                 datetime.datetime.strptime(dateE,
-                                                                                                                                                            '%Y-%m-%d')]),
-                                                                                                                                root[
-                                                                                                                                    depth].text.strip()]
+                                                                                                                            if \
+                                                                                                                                    root[
+                                                                                                                                        depth].attrib[
+                                                                                                                                        'value'] == '02':
+                                                                                                                                dateB = '2100-01-01'
+                                                                                                                                dateE = '2199-12-31'
+                                                                                                                                datas[
+                                                                                                                                    indices[
+                                                                                                                                        depth]] = [
+                                                                                                                                    tuple(
+                                                                                                                                        [
+                                                                                                                                            datetime.datetime.strptime(
+                                                                                                                                                dateB,
+                                                                                                                                                '%Y-%m-%d').replace(
+                                                                                                                                                year=200),
+                                                                                                                                            datetime.datetime.strptime(
+                                                                                                                                                dateE,
+                                                                                                                                                '%Y-%m-%d').replace(
+                                                                                                                                                year=299)]),
+                                                                                                                                    root[
+                                                                                                                                        depth].text.strip()]
+                                                                                                                            else:
+                                                                                                                                dateB = \
+                                                                                                                                    root[
+                                                                                                                                        depth].attrib[
+                                                                                                                                        'value'].split(
+                                                                                                                                        '-')[
+                                                                                                                                        0] + '-01-01'
+                                                                                                                                dateE = \
+                                                                                                                                    root[
+                                                                                                                                        depth].attrib[
+                                                                                                                                        'value'].split(
+                                                                                                                                        '-')[
+                                                                                                                                        0] + '-12-31'
+                                                                                                                                datas[
+                                                                                                                                    indices[
+                                                                                                                                        depth]] = [
+                                                                                                                                    tuple(
+                                                                                                                                        [
+                                                                                                                                            datetime.datetime.strptime(
+                                                                                                                                                dateB,
+                                                                                                                                                '%Y-%m-%d'),
+                                                                                                                                            datetime.datetime.strptime(
+                                                                                                                                                dateE,
+                                                                                                                                                '%Y-%m-%d')]),
+                                                                                                                                    root[
+                                                                                                                                        depth].text.strip()]
+                                                                else:
+                                                                    if root[depth].attrib['value'].split('-')[0].find(
+                                                                            'XX') == -1:
+                                                                        if root[depth].attrib['value'].find(
+                                                                                'UNDEF-this') == -1:
+                                                                            datas[indices[depth]] = [
+                                                                                datetime.datetime.strptime(
+                                                                                    root[depth].attrib['value'].replace(
+                                                                                        'TNI', '').replace('TMO',
+                                                                                                           '').replace(
+                                                                                        'TEV', '').replace('TAF', ''),
+                                                                                    '%Y-%m-%d'),
+                                                                                root[depth].text.strip()]
+                                                        else:
+                                                            if root[depth].attrib['value'][
+                                                               root[depth].attrib['value'].find(':') + 1:].find(
+                                                                    ':') == -1:
+                                                                if root[depth].attrib['value'].split('-')[0] != 'XXXX':
+                                                                    datas[indices[depth]] = [datetime.datetime.strptime(
+                                                                        root[depth].attrib['value'].replace('24:',
+                                                                                                            '12:'),
+                                                                        '%Y-%m-%dT%H:%M'), root[depth].text.strip()]
                                                             else:
-                                                                if root[depth].attrib['value'].split('-')[0].find('XX') ==-1:
-                                                                    if root[depth].attrib['value'].find('UNDEF-this') == -1:
-                                                                        datas[indices[depth]] = [datetime.datetime.strptime(
-                                                                            root[depth].attrib['value'].replace('TNI','').replace('TMO','').replace('TEV','').replace('TAF',''),
-                                                                            '%Y-%m-%d'),root[depth].text.strip()]
-                                                    else:
-                                                        if root[depth].attrib['value'][root[depth].attrib['value'].find(':') + 1:].find(
-                                                                ':') == -1:
-                                                            if root[depth].attrib['value'].split('-')[0] != 'XXXX':
                                                                 datas[indices[depth]] = [datetime.datetime.strptime(
                                                                     root[depth].attrib['value'].replace('24:', '12:'),
-                                                                    '%Y-%m-%dT%H:%M'),root[depth].text.strip()]
-                                                        else:
-                                                            datas[indices[depth]] = [datetime.datetime.strptime(
-                                                                root[depth].attrib['value'].replace('24:', '12:'),
-                                                                '%Y-%m-%dT%H:%M:%S'),root[depth].text.strip()]
-
+                                                                    '%Y-%m-%dT%H:%M:%S'), root[depth].text.strip()]
+                                except:
+                                    datas[indices[depth]] = [
+                                        datetime.datetime.strptime(root[0].attrib['value'].split('-')[0] + '-' + \
+                                                                   root[0].attrib['value'].split('-')[
+                                                                       1] + '-' + str(
+                                            calendar.monthrange(int(root[0].attrib['value'].split('-')[0]),
+                                                                int(root[0].attrib['value'].split('-')[1]))[1]),
+                                                                   '%Y-%m-%d'), root[depth].text.strip()]
             datas = [x for x in datas if not isinstance(x, int)]
-            return datas,duren,refs,sets
+            return datas, duren, refs, sets
 
     '''
         Extract publication datum out of text of evidence
@@ -535,11 +651,12 @@ class snippet:
     '''
         Read the publication file out of the timeml file belonging to this evidence
     '''
+
     def readPublicationDate(self):
         try:
-            self.publishTime =  datetime.datetime.strptime(self.publishTime[:-1], '%b %d, %Y')
+            self.publishTime = datetime.datetime.strptime(self.publishTime[:-1], '%b %d, %Y')
         except:
-            path = 'SnippetDates' + '/' + self.claimID+'/'+self.number + '.xml'
+            path = 'SnippetDates' + '/' + self.claimID + '/' + self.number + '.xml'
             if os.path.exists(path):
                 parser = etree.XMLParser(recover=True)
                 tree = etree.parse(path, parser)
@@ -573,7 +690,7 @@ class snippet:
                                 if root[0].attrib['type'] == "DURATION":
                                     self.publishTime = None
                                 else:
-                                    if root[0].attrib['value'].find('UNDEF')!=-1:
+                                    if root[0].attrib['value'].find('UNDEF') != -1:
                                         self.publishTime = None
                                     else:
                                         if root[0].attrib['value'].find('REF') != -1:
@@ -588,8 +705,12 @@ class snippet:
                                                             dateB = \
                                                                 root[0].attrib['value'].split('-')[
                                                                     0] + '-' + root[0].attrib['value'].split('-')[
-                                                                    1]+'-01'
-                                                            dateE = root[0].attrib['value'].split('-')[0] + '-' + root[0].attrib['value'].split('-')[1] +'-'+ str(calendar.monthrange(int(root[0].attrib['value'].split('-')[0]), int(root[0].attrib['value'].split('-')[1]))[1])
+                                                                    1] + '-01'
+                                                            dateE = root[0].attrib['value'].split('-')[0] + '-' + \
+                                                                    root[0].attrib['value'].split('-')[1] + '-' + str(
+                                                                calendar.monthrange(
+                                                                    int(root[0].attrib['value'].split('-')[0]),
+                                                                    int(root[0].attrib['value'].split('-')[1]))[1])
                                                             self.publishTime = tuple(
                                                                 [datetime.datetime.strptime(dateB,
                                                                                             '%Y-%m-%d'),
@@ -610,21 +731,46 @@ class snippet:
                                                                      datetime.datetime.strptime(dateE,
                                                                                                 '%Y-%m-%d')])
                                                             else:
-                                                                if root[0].attrib['value'].find('UNDEF-this-hour')==-1:
-                                                                    self.publishTime = datetime.datetime.strptime(root[0].attrib['value'], '%Y-%m-%d')
+                                                                if root[0].attrib['value'].find(
+                                                                        'UNDEF-this-hour') == -1:
+                                                                    try:
+                                                                        self.publishTime = datetime.datetime.strptime(
+                                                                            root[0].attrib['value'], '%Y-%m-%d')
+                                                                    except:
+                                                                        self.publishTime = datetime.datetime.strptime(
+                                                                            root[0].attrib['value'].split('-')[
+                                                                                0] + '-' +
+                                                                            root[0].attrib['value'].split('-')[
+                                                                                1] + '-' + str(calendar.monthrange(int(
+                                                                                root[0].attrib['value'].split('-')[0]),
+                                                                                int(root[0].attrib['value'].split('-')[
+                                                                                        1]))[1]), '%Y-%m-%d')
                                                                 else:
                                                                     self.publishTime = None
                                                     else:
-                                                        if root[0].attrib['value'][root[0].attrib['value'].find(':') + 1:].find(':') == -1:
-                                                            self.publishTime = datetime.datetime.strptime(root[0].attrib['value'].replace('24:', '12:'),
-                                                                                                        '%Y-%m-%dT%H:%M')
-                                                        else:
-                                                            self.publishTime = datetime.datetime.strptime(root[0].attrib['value'].replace('24:', '12:'),
-                                                                                                        '%Y-%m-%dT%H:%M:%S')
+                                                        try:
+                                                            if root[0].attrib['value'][
+                                                               root[0].attrib['value'].find(':') + 1:].find(':') == -1:
+                                                                self.publishTime = datetime.datetime.strptime(
+                                                                    root[0].attrib['value'].replace('24:', '12:'),
+                                                                    '%Y-%m-%dT%H:%M')
+                                                            else:
+                                                                self.publishTime = datetime.datetime.strptime(
+                                                                    root[0].attrib['value'].replace('24:', '12:'),
+                                                                    '%Y-%m-%dT%H:%M:%S')
+                                                        except:
+                                                            self.publishTime = datetime.datetime.strptime(
+                                                                root[0].attrib['value'].split('-')[
+                                                                    0] + '-' +
+                                                                root[0].attrib['value'].split('-')[
+                                                                    1] + '-' + str(calendar.monthrange(int(
+                                                                    root[0].attrib['value'].split('-')[0]),
+                                                                    int(root[0].attrib['value'].split('-')[
+                                                                            1]))[1]), '%Y-%m-%d')
                                                 else:
-                                                    self.publishTime=None
+                                                    self.publishTime = None
                 else:
-                    if len(root)>1:
+                    if len(root) > 1:
                         if root[0].attrib['value'].find('X') != -1:
                             parts = root[0].attrib['value'].split('-')
                             parts2 = root[1].attrib['value'].split('-')
@@ -647,54 +793,78 @@ class snippet:
                                     j += 1
                             date = date[:-1]
                             if i == 1:
-                                self.claimDate = datetime.datetime.strptime(
+                                self.publishTime = datetime.datetime.strptime(
                                     date,
                                     '%Y')
                             elif i == 2:
-                                self.claimDate = datetime.datetime.strptime(
+                                self.publishTime = datetime.datetime.strptime(
                                     date,
                                     '%Y-%m')
                             elif i == 3:
-                                self.claimDate = datetime.datetime.strptime(
-                                    date,
-                                    '%Y-%m-%d')
+                                try:
+                                    self.publishTime = datetime.datetime.strptime(
+                                        date,
+                                        '%Y-%m-%d')
+                                except:
+                                    self.publishTime = datetime.datetime.strptime(
+                                        date.split('-')[0] + '-' +
+                                        date.split('-')[
+                                            1] + '-' + str(
+                                            calendar.monthrange(int(root[0].attrib['value'].split('-')[0]),
+                                                                int(root[0].attrib['value'].split('-')[1]))[
+                                                1]),
+                                        '%Y-%m-%d')
                             else:
-                                self.claimDate = None
+                                self.publishTime = None
                         else:
-                            if root[0].attrib['value'].find('T') == -1 and root[1].attrib['value'].find('T') != -1:
-                                # correct fault of assigning 12pm to 24 in HeidelTime
-                                self.publishTime= datetime.datetime.strptime(root[1].attrib['value'].replace('24:', '12:'),
-                                                                            '%Y-%m-%dT%H:%M')
-                            else:
-                                # we choose publication date as claim date not last updated date
-                                if root[0].attrib['value'].find('T') != -1:
-                                    self.publishTime = datetime.datetime.strptime(root[0].attrib['value'], '%Y-%m-%dT%H:%M')
+                            try:
+                                if root[0].attrib['value'].find('T') == -1 and root[1].attrib['value'].find('T') != -1:
+                                    # correct fault of assigning 12pm to 24 in HeidelTime
+                                    self.publishTime = datetime.datetime.strptime(
+                                        root[1].attrib['value'].replace('24:', '12:'),
+                                        '%Y-%m-%dT%H:%M')
                                 else:
-                                    if len(root[0].attrib['value']) == 4:
-                                        # print('Claim ' + self.claimID)
-                                        dateB = \
-                                            root[0].attrib['value'].split('-')[
-                                                0] + '-' + '01' + '-01'
-                                        dateE = \
-                                            root[0].attrib['value'].split('-')[
-                                                0] + '-' + '12' + '-31'
-                                        self.publishTime = tuple(
-                                            [datetime.datetime.strptime(dateB,
-                                                                        '%Y-%m-%d'),
-                                             datetime.datetime.strptime(dateE,
-                                                                        '%Y-%m-%d')])
-                                    else:
+                                    # we choose publication date as claim date not last updated date
+                                    if root[0].attrib['value'].find('T') != -1:
                                         self.publishTime = datetime.datetime.strptime(root[0].attrib['value'],
-                                                                                      '%Y-%m-%d')
-                if len(root)>0 and self.publishTime!=None:
-                    #correct years 0-19 to 2020-2019
-                    if (not type(self.publishTime) is tuple) and self.publishTime.year<20 and (self.publishTime.month!=1 or self.publishTime.day!=1):
-                        self.publishTime = self.publishTime.replace(self.publishTime.year+2000,self.publishTime.month,self.publishTime.day,self.publishTime.hour,self.publishTime.minute,self.publishTime.second)
+                                                                                      '%Y-%m-%dT%H:%M')
+                                    else:
+                                        if len(root[0].attrib['value']) == 4:
+                                            # print('Claim ' + self.claimID)
+                                            dateB = \
+                                                root[0].attrib['value'].split('-')[
+                                                    0] + '-' + '01' + '-01'
+                                            dateE = \
+                                                root[0].attrib['value'].split('-')[
+                                                    0] + '-' + '12' + '-31'
+                                            self.publishTime = tuple(
+                                                [datetime.datetime.strptime(dateB,
+                                                                            '%Y-%m-%d'),
+                                                 datetime.datetime.strptime(dateE,
+                                                                            '%Y-%m-%d')])
+                                        else:
+                                            self.publishTime = datetime.datetime.strptime(root[0].attrib['value'],
+                                                                                          '%Y-%m-%d')
+                            except:
+                                self.publishTime = datetime.datetime.strptime(
+                                    root[0].attrib['value'].split('-')[0] + '-' + root[0].attrib['value'].split('-')[
+                                        1] + '-' + str(calendar.monthrange(int(root[0].attrib['value'].split('-')[0]),
+                                                                           int(root[0].attrib['value'].split('-')[1]))[
+                                                           1]),
+                                    '%Y-%m-%d')
+                if len(root) > 0 and self.publishTime != None:
+                    # correct years 0-19 to 2020-2019
+                    if (not type(self.publishTime) is tuple) and self.publishTime.year < 20 and (
+                            self.publishTime.month != 1 or self.publishTime.day != 1):
+                        self.publishTime = self.publishTime.replace(self.publishTime.year + 2000,
+                                                                    self.publishTime.month, self.publishTime.day,
+                                                                    self.publishTime.hour, self.publishTime.minute,
+                                                                    self.publishTime.second)
                     else:
-                        #delete impossible publication time
+                        # delete impossible publication time
                         if (not type(self.publishTime) is tuple) and self.publishTime.year < 1500:
-                            self.publishTime=None
-                        if (not type(self.publishTime) is tuple) and self.publishTime.year>2020:
+                            self.publishTime = None
+                        if (not type(self.publishTime) is tuple) and self.publishTime.year > 2020:
                             self.publishTime = None
                 else:
                     self.publishTime = None
